@@ -6,19 +6,16 @@ import path from "path";
 export default defineConfig({
   plugins: [vue()],
   base: "./src",
-  // resolve: {
-  //   alias: {
-  //     "@": path.resolve(__dirname, "src"),
-  //   },
-  // },
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          "sw.js": ["./src/sw.js"],
+        manualChunks(id) {
+          if (id.includes("sw.js")) {
+            return "sw";
+          }
         },
       },
     },
   },
-  assetsInclude: ["./src/sw.js"],
+  publicDir: "public", //
 });
