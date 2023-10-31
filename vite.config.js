@@ -15,7 +15,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          "sw.js": ["./src/sw.js"],
+          "sw.js": "./src/sw.js",
         },
       },
     },
