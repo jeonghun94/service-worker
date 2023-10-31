@@ -45,7 +45,7 @@ self.addEventListener("activate", function (event) {
 });
 
 self.addEventListener("fetch", function (event) {
-  console.log("Fetch request for: ", event.request.url, event.request.mode);
+  // console.log("Fetch request for: ", event.request.url, event.request.mode);
 });
 
 self.addEventListener("fetch", function (event) {
