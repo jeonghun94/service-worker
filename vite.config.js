@@ -20,4 +20,5 @@ export default defineConfig({
       },
     },
   },
+  assetsInclude: ["./src/sw.js"],
 });
