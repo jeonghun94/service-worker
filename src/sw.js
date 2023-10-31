@@ -1,14 +1,4 @@
-const responseContent =
-  "<html>" +
-  "<body>" +
-  "<style>" +
-  "body {text-align: center; background-color: #333; color: #eee;}" +
-  "</style>" +
-  "<h1>Gotham Imperial Hotel</h1>" +
-  "<p>There seems to be a problem with your connection.</p>" +
-  "<p>Come visit us at 1 Imperial Plaza, Gotham City for free WiFi.</p>" +
-  "</body>" +
-  "</html>";
+const responseContent = "오프라인이야!!!!!!!!!!!";
 
 // self.addEventListener("fetch", (event) => {
 //   event.respondWith(
@@ -91,9 +81,5 @@ self.addEventListener("push", function (event) {
   });
 });
 
-self.skipWaiting(() => {
-  console.log("skipWaiting");
-  console.log(self.registration);
-});
-
+self.skipWaiting();
 // console.log(self.registration, "self.registration");
