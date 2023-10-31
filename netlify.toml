@@ -1,4 +1,4 @@
 [[redirects]]
-    from = "/sw.js"
-    to = "/sw.js"
+    from = "/*"
+    to = "/*"
     status = 200
