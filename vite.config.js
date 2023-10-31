@@ -14,10 +14,8 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes("sw.js")) {
-            return "sw";
-          }
+        manualChunks: {
+          "sw.js": ["./src/sw.js"],
         },
       },
     },

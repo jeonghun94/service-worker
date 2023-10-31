@@ -1,6 +1,6 @@
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
-    .register("/sw.js")
+    .register("/assets/sw.js")
     .then(function (registration) {
       console.log("Service Worker connect succese", registration.scope);
     })
