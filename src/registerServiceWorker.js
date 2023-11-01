@@ -1,10 +1,10 @@
-if ("serviceWorker" in navigator) {
+if ('serviceWorker' in navigator) {
   navigator.serviceWorker
-    .register("/sw.js")
-    .then(function (registration) {
-      console.log("Service Worker connect succese", registration.scope);
+    .register('/sw.js')
+    .then((registration) => {
+      console.log('Service Worker connect succese', registration.scope);
     })
-    .catch(function (err) {
-      console.log("Service Worker connect fail", err);
+    .catch((err) => {
+      console.log('Service Worker connect fail', err);
     });
 }
