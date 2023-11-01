@@ -24,5 +24,6 @@ module.exports = {
     'linebreak-style': 0,
     'no-console': 'off',
     'no-plusplus': 'off',
+    'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
   },
 };
