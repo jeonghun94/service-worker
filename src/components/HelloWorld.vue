@@ -40,6 +40,7 @@ export default {
 
     function requestNotificationPermission() {
       if ('Notification' in window) {
+        showNotification();
         Notification.requestPermission().then((permission) => {
           if (permission === 'granted') {
             // 사용자가 알림 권한을 승인한 경우
@@ -51,11 +52,12 @@ export default {
 
     const sendMessage = () => {
       navigator.serviceWorker.controller.postMessage('Hello World');
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        console.log('서비스 워커에서 메시지 발신: ', event.data);
-        count.value++;
-      });
     };
+
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      console.log('서비스 워커에서 메시지 발신: ', event.data);
+      count.value++;
+    });
 
     return {
       count,

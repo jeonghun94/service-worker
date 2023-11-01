@@ -1,4 +1,15 @@
-const responseContent = "오프라인이야!!!!!!!!!!!";
+/* eslint-disable */
+const responseContent =
+  '<html>' +
+  '<body>' +
+  '<style>' +
+  'body {text-align: center; background-color: #333; color: #eee;}' +
+  '</style>' +
+  '<h1>Gotham Imperial Hotel</h1>' +
+  '<p>There seems to be a problem with your connection.</p>' +
+  '<p>Come visit us at 1 응아아 Plaza, Gotham City for free WiFi.</p>' +
+  '</body>' +
+  '</html>';
 
 // self.addEventListener("fetch", (event) => {
 //   event.respondWith(
@@ -15,57 +26,51 @@ const responseContent = "오프라인이야!!!!!!!!!!!";
 //   );
 // });
 
-self.addEventListener("install", function (event) {
-  console.log("Service Worker installing.");
-
+self.addEventListener('install', function (event) {
+  console.log('Service Worker installing.');
   event.waitUntil(
-    // 캐시를 열고 원하는 리소스를 캐싱합니다.
-    caches.open("my-cache").then((cache) => {
-      return cache.addAll([
-        "/",
-        "/index.html",
-        // 다른 파일 및 리소스 추가
-      ]);
-    })
+    caches.open('my-cache').then((cache) => {
+      return cache.addAll(['/', '/index.html']);
+    }),
   );
 });
 
-self.addEventListener("activate", function (event) {
-  console.log("Service Worker activating.");
+self.addEventListener('activate', function (event) {
+  console.log('Service Worker activating.');
 });
 
-self.addEventListener("fetch", function (event) {
+self.addEventListener('fetch', function (event) {
   // console.log("Fetch request for: ", event.request.url, event.request.mode);
 });
 
-self.addEventListener("fetch", function (event) {
+self.addEventListener('fetch', function (event) {
   event.respondWith(
     fetch(event.request).catch(function () {
       const options = {
-        title: "오류 났다",
-        body: "서비스 오프라인이다",
-        icon: "icon.png",
+        title: '오류 났다',
+        body: '서비스 오프라인이다',
+        icon: 'icon.png',
       };
 
       self.registration.showNotification(options.title, options);
 
       return new Response(responseContent, {
-        headers: { "Content-Type": "text/html" },
+        headers: { 'Content-Type': 'text/html; charset=UTF-8' },
       });
-    })
+    }),
   );
 });
 
-self.addEventListener("message", (event) => {
-  console.log("서비스 워커에서 메시지 수신:", event.data);
-  event.source.postMessage("안녕하세요! 서비스 워커에서 응답합니다.");
+self.addEventListener('message', (event) => {
+  console.log('서비스 워커에서 메시지 수신:', event.data);
+  event.source.postMessage('안녕하세요! 서비스 워커에서 응답합니다.');
 });
 
-self.addEventListener("push", function (event) {
+self.addEventListener('push', function (event) {
   const options = {
-    title: "푸시 알림 제목",
+    title: '푸시 알림 제목',
     body: event.data.text(),
-    icon: "icon.png",
+    icon: 'icon.png',
   };
 
   // 알림 권한 확인
