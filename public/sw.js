@@ -11,21 +11,6 @@ const responseContent =
   '</body>' +
   '</html>';
 
-// self.addEventListener("fetch", (event) => {
-//   event.respondWith(
-//     caches.match(event.request).then((cachedResponse) => {
-//       console.log("fetch", cachedResponse);
-//       if (cachedResponse) {
-//         // 캐시에서 리소스를 찾았을 경우, 해당 리소스를 반환
-//         return cachedResponse;
-//       }
-
-//       // 캐시에 해당 리소스가 없을 경우, 네트워크 요청을 수행
-//       return fetch(event.request);
-//     })
-//   );
-// });
-
 self.addEventListener('install', function (event) {
   console.log('Service Worker installing.');
   event.waitUntil(
@@ -40,7 +25,23 @@ self.addEventListener('activate', function (event) {
 });
 
 self.addEventListener('fetch', function (event) {
-  // console.log("Fetch request for: ", event.request.url, event.request.mode);
+  // console.log('Fetch request for: ', event.request.url, event.request.mode);
+});
+
+self.addEventListener('fetch', (event) => {
+  const request = new Request('/index.html');
+
+  caches.open('my-cache').then((cache) => {
+    cache.match(request).then((response) => {
+      if (response) {
+        // 캐시에서 자산을 찾았을 때의 처리
+        console.log('캐시에서 찾음');
+      } else {
+        // 캐시에서 자산을 찾지 못했을 때의 처리
+        console.log('캐시에서 찾지 못함');
+      }
+    });
+  });
 });
 
 self.addEventListener('fetch', function (event) {
@@ -87,4 +88,8 @@ self.addEventListener('push', function (event) {
 });
 
 self.skipWaiting();
+self.registration.showNotification('알림 테스트', {
+  body: '알림 테스트입니다.',
+});
+
 // console.log(self.registration, "self.registration");

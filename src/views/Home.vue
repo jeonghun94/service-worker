@@ -1,26 +1,22 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link>
-    <router-link to="/about">About</router-link>
-  </div>
-  <div>
+  <slot> <NavBar /> </slot>
+  <div class="w-full flex justify-center">
     <a href="#">
       <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="#">
-      <img src="../assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
   <HelloWorld />
 </template>
 
 <script>
+import NavBar from '../components/NavBar.vue';
 import HelloWorld from '../components/HelloWorld.vue';
 
 export default {
   name: 'HomeVue',
   components: {
     HelloWorld,
+    NavBar,
   },
 };
 </script>

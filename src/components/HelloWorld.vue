@@ -15,9 +15,11 @@
 
 <script>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default {
   setup() {
+    const router = useRouter();
     const count = ref(0);
 
     // 알림 표시
@@ -57,6 +59,7 @@ export default {
     navigator.serviceWorker.addEventListener('message', (event) => {
       console.log('서비스 워커에서 메시지 발신: ', event.data);
       count.value++;
+      router.push('/about');
     });
 
     return {
