@@ -52,7 +52,7 @@ export default {
       (val) => {
         console.log(val, 'qwdqww');
       },
-      { immediate: true },
+      // { immediate: true },
     );
 
     const onSubmit = (data) => console.log(data);

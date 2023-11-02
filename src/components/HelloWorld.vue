@@ -62,6 +62,10 @@ export default {
       router.push('/about');
     });
 
+    navigator.serviceWorker.addEventListener('messageerror', (event) => {
+      console.log('서비스 워커에서 메시지 발신 에러: ', event);
+    });
+
     return {
       count,
 
