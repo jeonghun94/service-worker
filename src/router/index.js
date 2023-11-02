@@ -12,10 +12,6 @@ const routes = [
     path: '/about',
     component: About,
   },
-  {
-    path: '/offline',
-    component: Offline,
-  },
 ];
 
 const router = createRouter({

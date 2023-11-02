@@ -8,6 +8,7 @@ const responseContent =
   '<h1>Gotham Imperial Hotel</h1>' +
   '<p>There seems to be a problem with your connection.</p>' +
   '<p>Come visit us at 1 응아아 Plaza, Gotham City for free WiFi.</p>' +
+  '<button onclick="window.location.href = \'/\'">재요청</button>' +
   '</body>' +
   '</html>';
 

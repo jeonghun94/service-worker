@@ -1,14 +1,20 @@
 <template>
-  <slot> <NavBar /> </slot>
+  <NavBar />
   <div class="w-full flex justify-center">
     <a href="#">
       <img src="/vite.svg" class="logo" alt="Vite logo" />
     </a>
+
+    <h1 class="text-black">{{ user.name }}</h1>
+    <h1 class="text-black">{{ user.age }}</h1>
   </div>
+
   <HelloWorld />
 </template>
 
 <script>
+import { computed, onMounted } from 'vue';
+import { useStore } from 'vuex';
 import NavBar from '../components/NavBar.vue';
 import HelloWorld from '../components/HelloWorld.vue';
 
@@ -18,20 +24,15 @@ export default {
     HelloWorld,
     NavBar,
   },
+
+  setup() {
+    const { getters, dispatch } = useStore();
+    const user = computed(() => getters['user/getUser']);
+
+    onMounted(async () => {
+      await dispatch('user/setUser', { name: 'hun', age: 30 });
+    });
+    return { user };
+  },
 };
 </script>
-
-<style>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
