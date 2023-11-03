@@ -1,21 +1,19 @@
 <template>
-  <div class="card">
-    <button type="button" @click="requestNotificationPermission">
+  <!-- <button type="button" @click="requestNotificationPermission">
       Notification Access
-    </button>
+    </button> -->
 
-    <button @click="sendMessage" class="text-red-500">
-      서비스 워커에 <br />
-      메세지 보내기
-    </button>
+  <button @click="sendMessage" class="text-red-500">
+    서비스 워커에 <br />
+    메세지 보내기
+  </button>
 
-    <!-- <h1>count: {{ count }}</h1> -->
+  <!-- <h1>count: {{ count }}</h1> -->
 
-    <button @click="handleSelect">데이터 조회</button>
-    <button @click="handleInsert">데이터 넣기</button>
-    <button @click="handleDelete">데이터 삭제</button>
-    <button @click="handleUpdate">데이터 수정</button>
-  </div>
+  <button @click="handleSelect">데이터 조회</button>
+  <button @click="handleInsert">데이터 넣기</button>
+  <button @click="handleDelete">데이터 삭제</button>
+  <button @click="handleUpdate">데이터 수정</button>
 </template>
 
 <script>
