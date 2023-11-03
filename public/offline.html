@@ -2,18 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
   </head>
   <body>
     <h1>your network is down</h1>
     <img src="./img/js-logo.png" alt="logo" />
-    <button onclick="handleMessages()">click</button>
-
-    <script>
-      const handleMessages = () => {
-        navigator.serviceWorker.controller.postMessage('hello from client');
-      };
-    </script>
   </body>
 </html>

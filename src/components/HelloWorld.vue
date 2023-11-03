@@ -10,17 +10,57 @@
     </button>
 
     <h1>count: {{ count }}</h1>
+
+    <button @click="handleSelect">데이터 조회</button>
+    <button @click="handleInsert">데이터 넣기</button>
+    <button @click="handleDelete">데이터 삭제</button>
+    <button @click="handleUpdate">데이터 수정</button>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
+import {
+  ctoolDBOpen,
+  ctoolTableReset,
+  ctoolSelect,
+  ctoolInsert,
+  ctoolDelete,
+  ctoolUpdate,
+} from '../libs/indexedDB';
 
 export default {
   setup() {
+    onMounted(async () => {
+      await ctoolDBOpen();
+    });
+
+    onBeforeUnmount(async () => {
+      await ctoolTableReset();
+    });
+
     const router = useRouter();
     const count = ref(0);
+
+    const handleSelect = async () => {
+      const rows = await ctoolSelect();
+      console.log(rows);
+    };
+
+    const handleInsert = async () => {
+      await ctoolInsert(++count.value, 'val');
+      const rows = await ctoolSelect();
+      console.log(rows);
+    };
+
+    const handleDelete = async () => {
+      await ctoolDelete(1);
+    };
+
+    const handleUpdate = async () => {
+      await ctoolUpdate(1, 'val2');
+    };
 
     // 알림 표시
     function showNotification() {
@@ -68,9 +108,13 @@ export default {
 
     return {
       count,
-
       requestNotificationPermission,
       sendMessage,
+
+      handleSelect,
+      handleInsert,
+      handleDelete,
+      handleUpdate,
     };
   },
 };
