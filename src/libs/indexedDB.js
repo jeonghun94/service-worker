@@ -1,51 +1,27 @@
 /* eslint-disable */
-
-let db = null;
-let request = null;
-const dbName = 'ctoolIndexedDB'; // db명
+const tableName = 'indexedTable';
+const dbName = 'indexedDB';
 const version = 1000;
-const tableName = 'ctoolWebRtc';
+let request = null;
+let db = null;
 
-/**
- * open indexedDB
- */
 export const ctoolDBOpen = () => {
-  // check. support web browser
-
   if (!window.indexedDB) {
     console.log('현재 웹 브라우저는 indexedDB를 지원하지 않습니다.');
     return;
   }
 
-  // IDBOpenDBRequest
   request = indexedDB.open(dbName, version);
-  const names = [
-    { id: '4', value: 'a' },
-    { id: '2', value: 'b' },
-    { id: '3', value: 'c' },
-  ];
+
   request.onupgradeneeded = (event) => {
     db = request.result;
-    const key = 'id';
-
-    const store = db.createObjectStore(tableName, { keyPath: key });
-    // const obj = {
-    // 	[key]: "1",
-    // 	value: "name"
-    // };
-    //store.put(obj);
-
-    for (const name of names) {
-      // const request = store.add(name);
-    }
+    db.createObjectStore(tableName, { keyPath: 'id' });
   };
+
   request.onsuccess = (event) => {
     db = request.result;
-    // IDBTransaction
     const transaction = db.transaction(tableName, 'readwrite');
-    // IDBObjectStore
     const objectStore = transaction.objectStore(tableName);
-    // clear
     objectStore.clear();
   };
 
@@ -54,57 +30,33 @@ export const ctoolDBOpen = () => {
   };
 };
 
-/**
- * delete all indexedDB table
- */
 export const ctoolTableReset = () => {
   db = request.result;
-  // IDBTransaction
   const transaction = db.transaction(tableName, 'readwrite');
-  // IDBObjectStore
   const objectStore = transaction.objectStore(tableName);
   objectStore.clear();
 };
 
-/**
- * insert indexedDB table row
- */
-export const ctoolInsert = (key, value) => {
-  const transaction = db.transaction(tableName, 'readwrite');
-  // IDBObjectStore
-  const objectStore = transaction.objectStore(tableName);
-
+export const ctoolInsert = (id, value) => {
   const obj = {
-    id: key,
-    value: value,
+    id,
+    value,
   };
-
-  console.log(obj);
-
-  const request2 = objectStore.add(obj);
-  request2.onsuccess = (event) => {};
-
-  const d = objectStore.get(key);
-
-  const select1 = ctoolSelect().then((data) => {});
-};
-
-/**
- * update indexedDB table row
- */
-export const ctoolUpdate = (key, value) => {
   const transaction = db.transaction(tableName, 'readwrite');
   const objectStore = transaction.objectStore(tableName);
-  const obj = {
-    id: key,
-    value: value,
-  };
-  const request2 = objectStore.put(obj);
+  objectStore.add(obj);
 };
 
-/**
- * delete indexedDB table row
- */
+export const ctoolUpdate = (id, value) => {
+  const obj = {
+    id,
+    value,
+  };
+  const transaction = db.transaction(tableName, 'readwrite');
+  const objectStore = transaction.objectStore(tableName);
+  objectStore.put(obj);
+};
+
 export const ctoolDelete = (key) => {
   if (key == null) return;
   const transaction = db.transaction(tableName, 'readwrite');
@@ -112,10 +64,6 @@ export const ctoolDelete = (key) => {
   objectStore.delete(key);
 };
 
-/**
- * select indexedDB table rows
- * set promise
- */
 export const ctoolSelect = (start = 0, end = 20) => {
   const transaction = db.transaction(tableName, 'readonly');
   const objectStore = transaction.objectStore(tableName);
@@ -153,9 +101,6 @@ export const ctoolSelect = (start = 0, end = 20) => {
   });
 };
 
-/**
- * select indexedDB table row by Key
- */
 export const ctoolSelectKey = (key) => {
   if (key == null) return;
   const transaction = db.transaction(tableName, 'readonly');
