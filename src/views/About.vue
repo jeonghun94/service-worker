@@ -15,7 +15,6 @@
   <input type="text" v-model="msg" class="border border-red-500" />
   <h1 class="border text-black" v-once>{{ msg }}</h1>
   <p v-text="msg"></p>
-
   <h1 v-show="msg !== 'lal'">show</h1>
 </template>
 

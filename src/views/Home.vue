@@ -1,10 +1,6 @@
 <template>
   <NavBar />
   <div class="w-full flex justify-center">
-    <a href="#">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-
     <h1 class="text-black">{{ user.name }}</h1>
     <h1 class="text-black">{{ user.age }}</h1>
   </div>
@@ -30,7 +26,7 @@ export default {
     const user = computed(() => getters['user/getUser']);
 
     onMounted(async () => {
-      await dispatch('user/setUser', { name: 'hun', age: 30 });
+      await dispatch('user/setUser', { name: 'x', age: 3 });
     });
     return { user };
   },

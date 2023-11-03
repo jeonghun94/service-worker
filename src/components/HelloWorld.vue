@@ -9,7 +9,7 @@
       메세지 보내기
     </button>
 
-    <h1>count: {{ count }}</h1>
+    <!-- <h1>count: {{ count }}</h1> -->
 
     <button @click="handleSelect">데이터 조회</button>
     <button @click="handleInsert">데이터 넣기</button>

@@ -31,29 +31,32 @@ self.addEventListener('activate', function (event) {
 //   });
 // });
 
-self.addEventListener('fetch', function (event) {
+self.addEventListener('fetch', (event) => {
   event.respondWith(
-    fetch(event.request).catch(function () {
-      if (event.request.url.endsWith('/img/js-logo.png')) {
-        // 이미지 요청인 경우 상대 경로를 수정하여 캐시에서 찾습니다.
-        return caches.match('/public/img/js-logo.png');
-      }
-      return caches.match('/public/offline.html');
+    caches.match(event.request).then((request) => {
+      console.log('[Service Worker] Fetching resource: ' + event.request.url);
+      return (
+        request ||
+        fetch(event.request)
+          .then(async (response) => {
+            const cache = await caches.open('my-cache');
+            console.log(
+              '[Service Worker] Caching new resource: ' + event.request.url,
+            );
+            cache.put(event.request, response.clone());
+            return response;
+          })
+          .catch(() => {
+            console.log('offline');
+            if (event.request.url.endsWith('/img/js-logo.png')) {
+              return caches.match('/public/img/js-logo.png');
+            }
+            return caches.match('/public/offline.html');
+          })
+      );
     }),
   );
 });
-
-// self.addEventListener('fetch', function (event) {
-//   event.respondWith(
-//     fetch(event.request).catch(function () {
-//       return caches.match('/public/offline.html').then((res) => {
-//         console.log(res, 'res');
-
-//         return res;
-//       });
-//     }),
-//   );
-// });
 
 self.addEventListener('message', (event) => {
   console.log('서비스 워커에서 메시지 수신:', event.data);
