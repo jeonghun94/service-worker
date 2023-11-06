@@ -5,11 +5,12 @@
     v-for="(item, index) in classInfoData"
     :key="index"
   >
-    <div class="flex flex-col gap-3">
-      <h1 class="text-md">{{ item.courseName }}</h1>
-      <h2 class="self-start">{{ item.instructorName }}</h2>
-    </div>
-
+    <router-link :to="'/course/' + item.courseCode" class="text-black">
+      <div class="flex flex-col gap-3">
+        <h1 class="text-md">{{ item.courseName }}</h1>
+        <h2 class="self-start">{{ item.instructorName }}</h2>
+      </div>
+    </router-link>
     <img class="w-14 h-14 rounded-md" :src="item.courseThumbnail" alt="logo" />
   </div>
 </template>
@@ -27,16 +28,19 @@ export default {
 
   setup() {
     const classInfoData = ref([]);
-
+    const apiPath = '/api/class-info';
     const getClassInfo = async () => {
       try {
-        const response = await axios.get(
-          'http://localhost:3000/api/class-info',
-        );
+        const response = await axios.get(`http://localhost:3000${apiPath}`);
         classInfoData.value = response.data;
       } catch (err) {
         if (navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage('data');
+          // navigator.serviceWorker.controller.postMessage('data');
+          console.log('서비스 워커에 데이터 요청');
+          navigator.serviceWorker.controller.postMessage({
+            type: 'data',
+            url: apiPath,
+          });
         }
       }
     };
