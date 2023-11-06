@@ -3,34 +3,14 @@
     class="border absolute top-0 w-full box-border left-0 m-0 p-0 flex justify-center gap-3"
   >
     <router-link
-      to="/"
-      class="text-inherit"
+      v-for="link in navLinks"
+      :key="link.to"
+      :to="link.to"
       :class="{
-        'text-inherit text-blue-500': $route.path === '/',
+        'text-blue-500': $route.path === link.to,
+        'text-black': $route.path !== link.to,
       }"
-      >Home</router-link
-    >
-    <router-link
-      to="/indexed-db"
-      class="text-inherit"
-      :class="{
-        'text-inherit text-blue-500': $route.path === '/indexed-db',
-      }"
-      >IndexedDB</router-link
-    >
-    <router-link
-      to="/service-worker"
-      class="text-inherit"
-      :class="{
-        'text-inherit text-blue-500': $route.path === '/service-worker',
-      }"
-      >ServiceWorker</router-link
-    >
-    <router-link
-      to="/vuex"
-      class="text-inherit"
-      :class="{ 'text-inherit text-blue-500': $route.path === '/vuex' }"
-      >Vuex</router-link
+      >{{ link.label }}</router-link
     >
   </div>
 </template>
@@ -44,9 +24,18 @@ export default {
   setup() {
     const router = useRouter();
     const { path } = router.currentRoute.value;
+
+    const navLinks = [
+      { to: '/', label: 'Home' },
+      { to: '/indexed-db', label: 'IndexedDB' },
+      { to: '/service-worker', label: 'ServiceWorker' },
+      { to: '/vuex', label: 'Vuex' },
+    ];
+
     return {
       router,
       path,
+      navLinks,
     };
   },
 };
