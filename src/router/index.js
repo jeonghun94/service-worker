@@ -2,6 +2,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import About from '../views/About.vue';
+import Vuex from '../views/Vuex.vue';
+import IndexedDB from '../views/IndexedDB.vue';
+import ServiceWorker from '../views/ServiceWorker.vue';
+
 const routes = [
   {
     path: '/',
@@ -10,6 +14,18 @@ const routes = [
   {
     path: '/about',
     component: About,
+  },
+  {
+    path: '/indexed-db',
+    component: IndexedDB,
+  },
+  {
+    path: '/vuex',
+    component: Vuex,
+  },
+  {
+    path: '/service-worker',
+    component: ServiceWorker,
   },
 ];
 

@@ -1,65 +1,22 @@
 <template>
-  <!-- <button type="button" @click="requestNotificationPermission">
-      Notification Access
-    </button> -->
-
+  <NavBar />
   <button @click="sendMessage" class="text-red-500">
     서비스 워커에 <br />
     메세지 보내기
   </button>
-
-  <!-- <h1>count: {{ count }}</h1> -->
-
-  <button @click="handleSelect">데이터 조회</button>
-  <button @click="handleInsert">데이터 넣기</button>
-  <button @click="handleDelete">데이터 삭제</button>
-  <button @click="handleUpdate">데이터 수정</button>
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import {
-  ctoolDBOpen,
-  ctoolTableReset,
-  ctoolSelect,
-  ctoolInsert,
-  ctoolDelete,
-  ctoolUpdate,
-} from '../libs/indexedDB';
+import NavBar from '../components/NavBar.vue';
 
 export default {
+  name: 'vuex-vue',
+  components: { NavBar },
   setup() {
-    onMounted(async () => {
-      await ctoolDBOpen();
-    });
-
-    onBeforeUnmount(async () => {
-      await ctoolTableReset();
-    });
-
     const router = useRouter();
     const count = ref(0);
-
-    const handleSelect = async () => {
-      const rows = await ctoolSelect();
-      console.log(rows);
-    };
-
-    const handleInsert = async () => {
-      await ctoolInsert(++count.value, 'val');
-      const rows = await ctoolSelect();
-      console.log(rows);
-    };
-
-    const handleDelete = async () => {
-      await ctoolDelete(1);
-    };
-
-    const handleUpdate = async () => {
-      await ctoolUpdate(1, 'val2');
-    };
-
     // 알림 표시
     function showNotification() {
       if ('Notification' in window) {
@@ -104,16 +61,7 @@ export default {
       console.log('서비스 워커에서 메시지 발신 에러: ', event);
     });
 
-    return {
-      count,
-      requestNotificationPermission,
-      sendMessage,
-
-      handleSelect,
-      handleInsert,
-      handleDelete,
-      handleUpdate,
-    };
+    return { sendMessage, requestNotificationPermission };
   },
 };
 </script>
