@@ -94,7 +94,6 @@ self.addEventListener('message', (event) => {
     });
   }
 });
-
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
 
