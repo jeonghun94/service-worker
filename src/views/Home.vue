@@ -35,7 +35,6 @@ export default {
         classInfoData.value = response.data;
       } catch (err) {
         if (navigator.serviceWorker.controller) {
-          console.log('서비스 워커에 데이터 요청');
           navigator.serviceWorker.controller.postMessage({
             type: 'data',
             url: apiPath,
@@ -46,11 +45,10 @@ export default {
 
     onBeforeMount(async () => {
       await getClassInfo();
-      console.log('onMounted: ', classInfoData.value);
+      // console.log('onMounted: ', classInfoData.value);
     });
 
     navigator.serviceWorker.addEventListener('message', (event) => {
-      console.log('서비스 워커에서 메시지 수신: 데이터 있음');
       classInfoData.value = JSON.parse(event.data);
     });
 

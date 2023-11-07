@@ -45,4 +45,19 @@ const router = createRouter({
   routes,
 });
 
+// router.beforeEach((to, from, next) => {
+//   if (navigator.onLine) {
+//     // 온라인 상태
+//     next();
+//   } else {
+//     // 오프라인 상태
+//     if (to.path === '/') {
+//       // 홈 페이지로 리디렉션
+//       next();
+//     } else {
+//       next('/');
+//     }
+//   }
+// });
+
 export default router;

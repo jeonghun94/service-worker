@@ -3,7 +3,7 @@ self.addEventListener('install', function (event) {
   console.log('Service Worker installing.');
   event.waitUntil(
     caches.open('my-cache').then((cache) => {
-      return cache.addAll(['/public/img/js-logo.png', '/public/offline.html']);
+      return cache.addAll(['/', '/img/js-logo.png', '/offline.html']);
     }),
   );
 });
@@ -13,8 +13,31 @@ self.addEventListener('activate', function (event) {
 });
 
 self.addEventListener('fetch', function (event) {
-  console.log('Fetch request for: ', event.request.url, event.request.mode);
+  const url = new URL(event.request.url);
+  event.respondWith(
+    caches.open('my-cache').then((cache) => {
+      return cache.match(url).then((response) => {
+        if (response) {
+          console.log('캐시에서 리소스 반환');
+          console.log(response);
+          return response; // 캐시에서 리소스 반환
+        }
+      });
+    }),
+  );
+});
 
+// self.addEventListener('fetch', function (event) {
+//   event.respondWith(
+//     caches.open('my-cache').then((cache) => {
+//       return cache
+//         .match(event.request.url)
+//         .then((response) => (response ? response : ''));
+//     }),
+//   );
+// });
+
+self.addEventListener('fetch', function (event) {
   caches.open('my-cache').then((cache) => {
     cache.match(event.request).then((response) => {
       if (response) {
@@ -22,16 +45,44 @@ self.addEventListener('fetch', function (event) {
       } else {
         return fetch(event.request).then((networkResponse) => {
           if (event.request.url.includes('/api')) {
-            console.log('네트워크 응답 데이터:', networkResponse);
             return networkResponse.json().then((data) => {
-              console.log('API 응답 데이터:', data);
-
               const cacheResponse = new Response(JSON.stringify(data), {
                 headers: { 'Content-Type': 'application/json; charset=utf-8' },
               });
+
+              data.forEach((item) => {
+                if (item.contents && item.contents.videos) {
+                  item.contents.videos.forEach(async (video) => {
+                    try {
+                      const videoCacheResponse = await cache.match(video);
+                      if (!videoCacheResponse) {
+                        const videoResponse = await fetch(video);
+                        cache.put(video, videoResponse);
+                      }
+                    } catch (error) {
+                      console.error('비디오 캐싱 중 오류 발생:', error);
+                    }
+                  });
+                }
+
+                if (item.contents && item.contents.images) {
+                  item.contents.images.forEach(async (image) => {
+                    try {
+                      const imageCacheResponse = await cache.match(image);
+                      if (!imageCacheResponse) {
+                        const imageResponse = await fetch(image);
+                        cache.put(image, imageResponse);
+                      }
+                    } catch (error) {
+                      console.error('이미지 캐싱 중 오류 발생:', error);
+                    }
+                  });
+                }
+              });
+
               const url = new URL(event.request.url);
               const path = url.pathname + url.search;
-              console.log(path, '캐시 할 데이터유알엘');
+
               cache.put(`api-data-${path}`, cacheResponse);
             });
           } else {
@@ -48,32 +99,14 @@ self.addEventListener('message', (event) => {
   if (event.data.type === 'data') {
     caches.open('my-cache').then((cache) => {
       cache.match(`api-data-${event.data.url}`).then(async (response) => {
-        console.log(event.data.url, '캐시 데이터 유알엘');
-        console.log('캐시 데이터:', response);
         if (response) {
           response.text().then((data) => {
+            console.log('여기임?');
             const myData = JSON.parse(data);
-
-            console.log('캐시 데이터:', myData);
-
-            const testData = {
-              courseName: '조정훈의 기초 수업',
-              instructorName: '조정훈',
-              courseCode: 'C101',
-              courseDescription: '프로그래밍의 기초를 배우는 수업입니다.',
-              courseSchedule: '월, 수, 금 10:00 AM - 12:00 PM',
-              startDate: '2023-01-16',
-              endDate: '2023-03-24',
-              creationDate: '2023-01-10',
-              courseThumbnail:
-                'https://imagedelivery.net/jhi2XPYSyyyjQKL_zc893Q/70289684-e162-4336-f465-9976c78efe00/public',
-            };
-
-            myData.unshift(testData);
-
             event.source.postMessage(JSON.stringify(myData));
           });
         } else {
+          console.log('캐시에 데이터가 없습니다. 여기 들어온거에요');
           cache
             .match(`api-data-${event.data.cacheingUrl}`)
             .then(async (response) => {
@@ -84,6 +117,18 @@ self.addEventListener('message', (event) => {
                   const testData = myData.filter(
                     (item) => item.courseCode === event.data.cacheingKey,
                   );
+
+                  testData[0].contents.images.map(async (image, idx) => {
+                    try {
+                      await cache.match(`/${idx}.png`).then((response) => {
+                        if (response) {
+                          return response;
+                        }
+                      });
+                    } catch (error) {
+                      console.error('이미지 캐싱 중 오류 발생:', error);
+                    }
+                  });
 
                   event.source.postMessage(JSON.stringify(testData));
                 });

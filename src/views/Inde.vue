@@ -20,15 +20,35 @@
         alt="logo"
       />
     </div>
-    <div v-if="item.contents" class="flex gap-3">
+    <div
+      v-if="item.contents && item.contents.images.length > 0"
+      class="flex gap-3"
+    >
       <img
-        v-for="(content, contentIndex) in item.contents"
-        class="w-4 h-4 rounded-md"
+        v-for="(content, contentIndex) in item.contents.images"
+        class="w-8 h-8 rounded-md"
         :key="contentIndex"
         :src="content"
         alt="logo"
       />
     </div>
+    <div v-else>
+      <h4>콘텐츠가 없습니다</h4>
+    </div>
+
+    <!-- <div
+      v-if="item.contents && item.contents.videos.length > 0"
+      class="flex gap-3"
+    >
+      <video
+        v-for="(content, contentIndex) in item.contents.videos"
+        class="w-full h-24 rounded-md"
+        :key="contentIndex"
+        :src="content"
+        autoplay
+        controls
+      ></video>
+    </div> -->
   </div>
 </template>
 
@@ -52,7 +72,6 @@ export default {
         classInfoDetail.value = response.data;
       } catch (error) {
         if (navigator.serviceWorker.controller) {
-          console.log('서비스 워커에 데이터 요청');
           navigator.serviceWorker.controller.postMessage({
             type: 'data',
             url: apiPath,
@@ -73,7 +92,6 @@ export default {
     });
 
     navigator.serviceWorker.addEventListener('message', (event) => {
-      console.log('서비스 워커에서 메시지 수신: 데이터 있음');
       classInfoDetail.value = JSON.parse(event.data);
     });
 
