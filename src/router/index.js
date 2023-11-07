@@ -5,6 +5,7 @@ import About from '../views/About.vue';
 import Vuex from '../views/Vuex.vue';
 import IndexedDB from '../views/IndexedDB.vue';
 import ServiceWorker from '../views/ServiceWorker.vue';
+import CourseDetail from '../views/Inde.vue';
 
 const routes = [
   {
@@ -26,6 +27,15 @@ const routes = [
   {
     path: '/service-worker',
     component: ServiceWorker,
+  },
+  {
+    path: '/course',
+    children: [
+      {
+        path: ':courseCode',
+        component: CourseDetail,
+      },
+    ],
   },
 ];
 

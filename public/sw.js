@@ -29,8 +29,10 @@ self.addEventListener('fetch', function (event) {
               const cacheResponse = new Response(JSON.stringify(data), {
                 headers: { 'Content-Type': 'application/json; charset=utf-8' },
               });
-
-              cache.put('my-data', cacheResponse);
+              const url = new URL(event.request.url);
+              const path = url.pathname + url.search;
+              console.log(path, '캐시 할 데이터유알엘');
+              cache.put(`api-data-${path}`, cacheResponse);
             });
           } else {
             cache.put(event.request, networkResponse.clone());
@@ -45,7 +47,8 @@ self.addEventListener('fetch', function (event) {
 self.addEventListener('message', (event) => {
   if (event.data.type === 'data') {
     caches.open('my-cache').then((cache) => {
-      cache.match('my-data').then(async (response) => {
+      cache.match(`api-data-${event.data.url}`).then(async (response) => {
+        console.log(event.data.url, '캐시 데이터 유알엘');
         console.log('캐시 데이터:', response);
         if (response) {
           response.text().then((data) => {

@@ -35,7 +35,6 @@ export default {
         classInfoData.value = response.data;
       } catch (err) {
         if (navigator.serviceWorker.controller) {
-          // navigator.serviceWorker.controller.postMessage('data');
           console.log('서비스 워커에 데이터 요청');
           navigator.serviceWorker.controller.postMessage({
             type: 'data',
