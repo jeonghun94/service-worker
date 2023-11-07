@@ -73,6 +73,22 @@ self.addEventListener('message', (event) => {
 
             event.source.postMessage(JSON.stringify(myData));
           });
+        } else {
+          cache
+            .match(`api-data-${event.data.cacheingUrl}`)
+            .then(async (response) => {
+              if (response) {
+                response.text().then((data) => {
+                  const myData = JSON.parse(data);
+
+                  const testData = myData.filter(
+                    (item) => item.courseCode === event.data.cacheingKey,
+                  );
+
+                  event.source.postMessage(JSON.stringify(testData));
+                });
+              }
+            });
         }
       });
     });

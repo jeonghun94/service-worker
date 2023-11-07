@@ -56,6 +56,8 @@ export default {
           navigator.serviceWorker.controller.postMessage({
             type: 'data',
             url: apiPath,
+            cacheingUrl: '/api/class-info',
+            cacheingKey: courseCode,
           });
         }
       }
