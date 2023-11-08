@@ -12,7 +12,10 @@
     "register-service-worker": "^1.7.2",
     "vue": "^3.3.4",
     "vue-hooks-form": "^0.3.0",
+    "vue-pdf-embed": "^1.2.1",
     "vue-router": "^4.2.5",
+    "vue3-pdf-app": "^1.0.3",
+    "vue3-pdfjs": "^0.1.6",
     "vuex": "^4.1.0",
     "vuex-persistedstate": "^4.1.0"
   },

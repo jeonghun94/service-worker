@@ -20,10 +20,7 @@
         alt="logo"
       />
     </div>
-    <div
-      v-if="item.contents && item.contents.images.length > 0"
-      class="flex gap-3"
-    >
+    <div v-if="item.contents?.images?.length > 0" class="flex gap-3">
       <img
         v-for="(content, contentIndex) in item.contents.images"
         class="w-8 h-8 rounded-md"
@@ -33,13 +30,10 @@
       />
     </div>
     <div v-else>
-      <h4>콘텐츠가 없습니다</h4>
+      <h4>이미지 콘텐츠가 없습니다</h4>
     </div>
 
-    <div
-      v-if="item.contents && item.contents.videos.length > 0"
-      class="flex gap-3"
-    >
+    <div v-if="item.contents?.videos?.length > 0" class="flex gap-3">
       <video
         v-for="(content, contentIndex) in item.contents.videos"
         class="w-full h-24 rounded-md"
@@ -49,6 +43,16 @@
         controls
       ></video>
     </div>
+    <div v-else>
+      <h4>동영상 콘텐츠가 없습니다</h4>
+    </div>
+
+    <div v-if="item.contents?.pdf?.length > 0">
+      <vue-pdf-embed :source="item.contents?.pdf[0]" />
+    </div>
+    <div v-else>
+      <h4>PDF 콘텐츠가 없습니다</h4>
+    </div>
   </div>
 </template>
 
@@ -56,10 +60,12 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import VuePdfEmbed from 'vue-pdf-embed';
 import NavBar from '../components/NavBar.vue';
 
 export default {
   name: 'DetailVue',
+  components: { VuePdfEmbed, NavBar },
   setup() {
     const router = useRouter();
     const { courseCode } = router.currentRoute.value.params;
@@ -93,7 +99,6 @@ export default {
 
     navigator.serviceWorker.addEventListener('message', (event) => {
       classInfoDetail.value = JSON.parse(event.data);
-      console.log('message: ', classInfoDetail.value);
     });
 
     return {
@@ -102,6 +107,5 @@ export default {
       handleBack,
     };
   },
-  components: { NavBar },
 };
 </script>

@@ -3,7 +3,12 @@ self.addEventListener('install', function (event) {
   console.log('Service Worker installing.');
   event.waitUntil(
     caches.open('my-cache').then((cache) => {
-      return cache.addAll(['/', '/img/js-logo.png', '/offline.html']);
+      return cache.addAll([
+        '/',
+        '/vite.svg',
+        '/img/js-logo.png',
+        '/offline.html',
+      ]);
     }),
   );
 });
@@ -12,32 +17,45 @@ self.addEventListener('activate', function (event) {
   console.log('Service Worker activating.');
 });
 
+// self.addEventListener('fetch', (event) => {
+//   const request = event.request;
+//   event.respondWith(
+//     caches.match(request).then((response) => {
+//       return response || fetch(request);
+//     }),
+//   );
+// });
+
 self.addEventListener('fetch', (event) => {
-  if (
-    event.request.url.endsWith('.png') ||
-    event.request.url.endsWith('.jpg') ||
-    event.request.url.endsWith('.jpeg') ||
-    event.request.url.endsWith('.gif') ||
-    event.request.url.endsWith('.svg') ||
-    event.request.url.endsWith('.mp4') ||
-    event.request.url.endsWith('.webm') ||
-    event.request.url.endsWith('.ogg') ||
-    event.request.url.endsWith('.mp3') ||
-    event.request.url.endsWith('.wav') ||
-    event.request.url.endsWith('.flac') ||
-    event.request.url.endsWith('.aac') ||
-    event.request.url.endsWith('.wma') ||
-    event.request.url.endsWith('.m4a') ||
-    event.request.url.endsWith('.opus')
-  ) {
+  const imageAudioVideoRegex =
+    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus)$/i;
+
+  if (imageAudioVideoRegex.test(event.request.url)) {
     event.respondWith(
       caches.open('my-cache').then((cache) => {
-        console.log('해당 리소스를 반환합니다.');
-        return cache.match(event.request.url).then((response) => response);
+        return cache.match(event.request.url).then((response) => {
+          console.log(
+            '캐싱된 이미지, 오디오, 비디오 파일 요청:',
+            event.request.url,
+          );
+          return response;
+        });
       }),
     );
   }
 });
+
+const cacheResource = async (cache, url) => {
+  try {
+    const cacheResponse = await cache.match(url);
+    if (!cacheResponse) {
+      const networkResponse = await fetch(url);
+      cache.put(url, networkResponse.clone());
+    }
+  } catch (error) {
+    console.error(`캐싱 중 오류 발생: ${error}`);
+  }
+};
 
 self.addEventListener('fetch', function (event) {
   caches.open('my-cache').then((cache) => {
@@ -55,29 +73,13 @@ self.addEventListener('fetch', function (event) {
               data.forEach((item) => {
                 if (item.contents && item.contents.videos) {
                   item.contents.videos.forEach(async (video) => {
-                    try {
-                      const videoCacheResponse = await cache.match(video);
-                      if (!videoCacheResponse) {
-                        const videoResponse = await fetch(video);
-                        cache.put(video, videoResponse);
-                      }
-                    } catch (error) {
-                      console.error('비디오 캐싱 중 오류 발생:', error);
-                    }
+                    await cacheResource(cache, video);
                   });
                 }
 
                 if (item.contents && item.contents.images) {
                   item.contents.images.forEach(async (image) => {
-                    try {
-                      const imageCacheResponse = await cache.match(image);
-                      if (!imageCacheResponse) {
-                        const imageResponse = await fetch(image);
-                        cache.put(image, imageResponse);
-                      }
-                    } catch (error) {
-                      console.error('이미지 캐싱 중 오류 발생:', error);
-                    }
+                    await cacheResource(cache, image);
                   });
                 }
               });
