@@ -12,30 +12,32 @@ self.addEventListener('activate', function (event) {
   console.log('Service Worker activating.');
 });
 
-// self.addEventListener('fetch', function (event) {
-//   const url = new URL(event.request.url);
-//   event.respondWith(
-//     caches.open('my-cache').then((cache) => {
-//       return cache.match(url).then((response) => {
-//         if (response) {
-//           console.log('캐시에서 리소스 반환');
-//           console.log(response);
-//           return response; // 캐시에서 리소스 반환
-//         }
-//       });
-//     }),
-//   );
-// });
-
-// self.addEventListener('fetch', function (event) {
-//   event.respondWith(
-//     caches.open('my-cache').then((cache) => {
-//       return cache
-//         .match(event.request.url)
-//         .then((response) => (response ? response : ''));
-//     }),
-//   );
-// });
+self.addEventListener('fetch', (event) => {
+  if (
+    event.request.url.endsWith('.png') ||
+    event.request.url.endsWith('.jpg') ||
+    event.request.url.endsWith('.jpeg') ||
+    event.request.url.endsWith('.gif') ||
+    event.request.url.endsWith('.svg') ||
+    event.request.url.endsWith('.mp4') ||
+    event.request.url.endsWith('.webm') ||
+    event.request.url.endsWith('.ogg') ||
+    event.request.url.endsWith('.mp3') ||
+    event.request.url.endsWith('.wav') ||
+    event.request.url.endsWith('.flac') ||
+    event.request.url.endsWith('.aac') ||
+    event.request.url.endsWith('.wma') ||
+    event.request.url.endsWith('.m4a') ||
+    event.request.url.endsWith('.opus')
+  ) {
+    event.respondWith(
+      caches.open('my-cache').then((cache) => {
+        console.log('해당 리소스를 반환합니다.');
+        return cache.match(event.request.url).then((response) => response);
+      }),
+    );
+  }
+});
 
 self.addEventListener('fetch', function (event) {
   caches.open('my-cache').then((cache) => {
@@ -125,18 +127,5 @@ self.addEventListener('message', (event) => {
     });
   }
 });
-
-// self.addEventListener('fetch', (event) => {
-//   const requestUrl = new URL(event.request.url);
-
-//   // 요청 URL이 '/경로'인 경우 캐시에서 응답을 찾고, 없으면 네트워크 요청을 실행
-//   if (requestUrl.pathname === '/') {
-//     event.respondWith(
-//       caches.match('/').then((response) => {
-//         return response || fetch(event.request);
-//       }),
-//     );
-//   }
-// });
 
 self.skipWaiting();

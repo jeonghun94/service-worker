@@ -93,6 +93,7 @@ export default {
 
     navigator.serviceWorker.addEventListener('message', (event) => {
       classInfoDetail.value = JSON.parse(event.data);
+      console.log('message: ', classInfoDetail.value);
     });
 
     return {
