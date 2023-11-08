@@ -8,27 +8,16 @@ self.addEventListener('install', function (event) {
         '/vite.svg',
         '/img/js-logo.png',
         '/offline.html',
+        '/testVideo.mp4',
+        '/img/icons/msapplication-icon-144x144.png',
       ]);
     }),
   );
 });
 
-self.addEventListener('activate', function (event) {
-  console.log('Service Worker activating.');
-});
-
-// self.addEventListener('fetch', (event) => {
-//   const request = event.request;
-//   event.respondWith(
-//     caches.match(request).then((response) => {
-//       return response || fetch(request);
-//     }),
-//   );
-// });
-
 self.addEventListener('fetch', (event) => {
   const imageAudioVideoRegex =
-    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus)$/i;
+    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf)$/i;
 
   if (imageAudioVideoRegex.test(event.request.url)) {
     event.respondWith(
@@ -67,7 +56,9 @@ self.addEventListener('fetch', function (event) {
           if (event.request.url.includes('/api')) {
             return networkResponse.json().then((data) => {
               const cacheResponse = new Response(JSON.stringify(data), {
-                headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                headers: {
+                  'Content-Type': 'application/json; charset=utf-8',
+                },
               });
 
               data.forEach((item) => {
@@ -80,6 +71,12 @@ self.addEventListener('fetch', function (event) {
                 if (item.contents && item.contents.images) {
                   item.contents.images.forEach(async (image) => {
                     await cacheResource(cache, image);
+                  });
+                }
+
+                if (item.contents && item.contents.pdf) {
+                  item.contents.pdf.forEach(async (audio) => {
+                    await cacheResource(cache, audio);
                   });
                 }
               });

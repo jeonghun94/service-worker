@@ -20,38 +20,44 @@
         alt="logo"
       />
     </div>
-    <div v-if="item.contents?.images?.length > 0" class="flex gap-3">
-      <img
-        v-for="(content, contentIndex) in item.contents.images"
-        class="w-8 h-8 rounded-md"
-        :key="contentIndex"
-        :src="content"
-        alt="logo"
-      />
-    </div>
-    <div v-else>
-      <h4>이미지 콘텐츠가 없습니다</h4>
-    </div>
 
-    <div v-if="item.contents?.videos?.length > 0" class="flex gap-3">
-      <video
-        v-for="(content, contentIndex) in item.contents.videos"
-        class="w-full h-24 rounded-md"
-        :key="contentIndex"
-        :src="content"
-        autoplay
-        controls
-      ></video>
-    </div>
-    <div v-else>
-      <h4>동영상 콘텐츠가 없습니다</h4>
-    </div>
+    <div v-if="item?.contents">
+      <div v-if="item.contents?.images?.length > 0" class="flex gap-3">
+        <img
+          v-for="(content, contentIndex) in item.contents.images"
+          class="w-8 h-8 rounded-md"
+          :key="contentIndex"
+          :src="content"
+          alt="logo"
+        />
+      </div>
+      <div v-else>
+        <h4>이미지 콘텐츠가 없습니다</h4>
+      </div>
 
-    <div v-if="item.contents?.pdf?.length > 0">
-      <vue-pdf-embed :source="item.contents?.pdf[0]" />
+      <div v-if="item.contents?.videos?.length > 0" class="flex gap-3">
+        <video
+          v-for="(content, contentIndex) in item.contents.videos"
+          class="w-full h-24 rounded-md"
+          :key="contentIndex"
+          :src="content"
+          autoplay
+          controls
+        ></video>
+      </div>
+      <div v-else>
+        <h4>동영상 콘텐츠가 없습니다</h4>
+      </div>
+
+      <div v-if="item.contents?.pdf?.length > 0">
+        <vue-pdf-embed :source="item.contents?.pdf[0]" />
+      </div>
+      <div v-else>
+        <h4>PDF 콘텐츠가 없습니다</h4>
+      </div>
     </div>
     <div v-else>
-      <h4>PDF 콘텐츠가 없습니다</h4>
+      <h4>콘텐츠가 없습니다</h4>
     </div>
   </div>
 </template>
