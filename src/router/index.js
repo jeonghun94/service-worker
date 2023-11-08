@@ -9,6 +9,15 @@ import CourseDetail from '../views/Inde.vue';
 
 const routes = [
   {
+    path: '/course',
+    children: [
+      {
+        path: ':courseCode',
+        component: CourseDetail,
+      },
+    ],
+  },
+  {
     path: '/',
     component: Home,
   },
@@ -27,15 +36,6 @@ const routes = [
   {
     path: '/service-worker',
     component: ServiceWorker,
-  },
-  {
-    path: '/course',
-    children: [
-      {
-        path: ':courseCode',
-        component: CourseDetail,
-      },
-    ],
   },
 ];
 

@@ -12,20 +12,20 @@ self.addEventListener('activate', function (event) {
   console.log('Service Worker activating.');
 });
 
-self.addEventListener('fetch', function (event) {
-  const url = new URL(event.request.url);
-  event.respondWith(
-    caches.open('my-cache').then((cache) => {
-      return cache.match(url).then((response) => {
-        if (response) {
-          console.log('캐시에서 리소스 반환');
-          console.log(response);
-          return response; // 캐시에서 리소스 반환
-        }
-      });
-    }),
-  );
-});
+// self.addEventListener('fetch', function (event) {
+//   const url = new URL(event.request.url);
+//   event.respondWith(
+//     caches.open('my-cache').then((cache) => {
+//       return cache.match(url).then((response) => {
+//         if (response) {
+//           console.log('캐시에서 리소스 반환');
+//           console.log(response);
+//           return response; // 캐시에서 리소스 반환
+//         }
+//       });
+//     }),
+//   );
+// });
 
 // self.addEventListener('fetch', function (event) {
 //   event.respondWith(
@@ -101,35 +101,21 @@ self.addEventListener('message', (event) => {
       cache.match(`api-data-${event.data.url}`).then(async (response) => {
         if (response) {
           response.text().then((data) => {
-            console.log('여기임?');
+            console.log('캐싱 데이터 있을때');
             const myData = JSON.parse(data);
             event.source.postMessage(JSON.stringify(myData));
           });
         } else {
-          console.log('캐시에 데이터가 없습니다. 여기 들어온거에요');
+          console.log('캐싱 데이터 없을때');
           cache
             .match(`api-data-${event.data.cacheingUrl}`)
             .then(async (response) => {
               if (response) {
-                response.text().then((data) => {
+                await response.text().then((data) => {
                   const myData = JSON.parse(data);
-
                   const testData = myData.filter(
                     (item) => item.courseCode === event.data.cacheingKey,
                   );
-
-                  testData[0].contents.images.map(async (image, idx) => {
-                    try {
-                      await cache.match(`/${idx}.png`).then((response) => {
-                        if (response) {
-                          return response;
-                        }
-                      });
-                    } catch (error) {
-                      console.error('이미지 캐싱 중 오류 발생:', error);
-                    }
-                  });
-
                   event.source.postMessage(JSON.stringify(testData));
                 });
               }
@@ -139,17 +125,18 @@ self.addEventListener('message', (event) => {
     });
   }
 });
-self.addEventListener('fetch', (event) => {
-  const requestUrl = new URL(event.request.url);
 
-  // 요청 URL이 '/경로'인 경우 캐시에서 응답을 찾고, 없으면 네트워크 요청을 실행
-  if (requestUrl.pathname === '/') {
-    event.respondWith(
-      caches.match('/').then((response) => {
-        return response || fetch(event.request);
-      }),
-    );
-  }
-});
+// self.addEventListener('fetch', (event) => {
+//   const requestUrl = new URL(event.request.url);
+
+//   // 요청 URL이 '/경로'인 경우 캐시에서 응답을 찾고, 없으면 네트워크 요청을 실행
+//   if (requestUrl.pathname === '/') {
+//     event.respondWith(
+//       caches.match('/').then((response) => {
+//         return response || fetch(event.request);
+//       }),
+//     );
+//   }
+// });
 
 self.skipWaiting();

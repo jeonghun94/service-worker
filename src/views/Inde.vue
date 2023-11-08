@@ -36,7 +36,7 @@
       <h4>콘텐츠가 없습니다</h4>
     </div>
 
-    <!-- <div
+    <div
       v-if="item.contents && item.contents.videos.length > 0"
       class="flex gap-3"
     >
@@ -48,7 +48,7 @@
         autoplay
         controls
       ></video>
-    </div> -->
+    </div>
   </div>
 </template>
 
