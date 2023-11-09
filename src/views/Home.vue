@@ -31,7 +31,10 @@ export default {
     const apiPath = '/api/class-info';
     const getClassInfo = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000${apiPath}`);
+        const response = await axios.get(
+          `https://service-worker-api.vercel.app${apiPath}`,
+          // `http://localhost:3000${apiPath}/`,
+        );
         classInfoData.value = response.data;
       } catch (err) {
         if (navigator.serviceWorker.controller) {
