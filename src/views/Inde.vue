@@ -68,6 +68,7 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import VuePdfEmbed from 'vue-pdf-embed';
 import NavBar from '../components/NavBar.vue';
+import { URL } from '../constants';
 
 export default {
   name: 'DetailVue',
@@ -80,10 +81,7 @@ export default {
     const apiPath = `/api/class-info-detail?courseCode=${courseCode}`;
     const getClassInfoDetail = async () => {
       try {
-        const response = await axios.get(
-          `https://service-worker-api.vercel.app${apiPath}`,
-          // `http://localhost:3000${apiPath}/`,
-        );
+        const response = await axios.get(URL + apiPath);
         classInfoDetail.value = response.data;
       } catch (error) {
         if (navigator.serviceWorker.controller) {

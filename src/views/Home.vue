@@ -19,6 +19,7 @@
 import axios from 'axios';
 import { ref, onBeforeMount } from 'vue';
 import NavBar from '../components/NavBar.vue';
+import { URL } from '../constants';
 
 export default {
   name: 'HomeVue',
@@ -31,10 +32,7 @@ export default {
     const apiPath = '/api/class-info';
     const getClassInfo = async () => {
       try {
-        const response = await axios.get(
-          `https://service-worker-api.vercel.app${apiPath}`,
-          // `http://localhost:3000${apiPath}/`,
-        );
+        const response = await axios.get(`${URL + apiPath}`);
         classInfoData.value = response.data;
       } catch (err) {
         if (navigator.serviceWorker.controller) {
