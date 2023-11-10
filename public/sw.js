@@ -15,12 +15,22 @@ self.addEventListener('install', function (event) {
   );
 });
 
+const isResourceCached = async (cache, resource) => {
+  const cachedResponse = await cache.match(resource);
+  return !!cachedResponse;
+};
+
 const cacheResource = async (cache, resource) => {
   try {
+    if (await isResourceCached(cache, resource)) {
+      console.log('이미 캐시된 리소스:', resource);
+      return;
+    }
+
     const response = await fetch(resource);
     await cache.put(resource, response.clone());
   } catch (error) {
-    // 처리하거나 로깅할 수 있음
+    console.log('리소스 캐싱 실패:', resource, error);
   }
 };
 
@@ -52,8 +62,10 @@ self.addEventListener('fetch', async (event) => {
         for (const content of [
           ...(item.contents.videos || []),
           ...(item.contents.images || []),
+          ...(item.contents.htmls || []),
           ...(item.contents.pdf || []),
         ]) {
+          console.log('캐싱할 리소스:', content);
           await cacheResource(cache, content);
         }
       }
@@ -67,16 +79,8 @@ self.addEventListener('fetch', async (event) => {
 });
 
 self.addEventListener('fetch', async (event) => {
-  event.respondWith(
-    caches.open('my-cache').then((cache) => {
-      return cache.match(event.request).then((response) => {
-        return response || fetch(event.request);
-      });
-    }),
-  );
-
   const imageAudioVideoRegex =
-    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf)$/i;
+    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf|html)$/i;
 
   if (imageAudioVideoRegex.test(event.request.url)) {
     event.respondWith(
@@ -90,7 +94,23 @@ self.addEventListener('fetch', async (event) => {
         });
       }),
     );
+  } else {
+    event.respondWith(
+      caches.open('my-cache').then((cache) => {
+        return cache.match(event.request).then((response) => {
+          return response || fetch(event.request);
+        });
+      }),
+    );
   }
+});
+
+self.addEventListener('online', () => {
+  console.log('온라인 상태');
+});
+
+self.addEventListener('offline', () => {
+  console.log('오프라인 상태');
 });
 
 self.addEventListener('message', (event) => {
