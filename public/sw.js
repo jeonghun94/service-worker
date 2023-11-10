@@ -10,6 +10,9 @@ self.addEventListener('install', function (event) {
         '/offline.html',
         '/testVideo.mp4',
         '/img/icons/msapplication-icon-144x144.png',
+        '/js/test.js',
+        '/css/test.css',
+        '/test.html',
       ]);
     }),
   );
@@ -80,18 +83,17 @@ self.addEventListener('fetch', async (event) => {
 
 self.addEventListener('fetch', async (event) => {
   const imageAudioVideoRegex =
-    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf)$/i;
+    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf|html)$/i;
 
   if (imageAudioVideoRegex.test(event.request.url)) {
     event.respondWith(
-      caches.open('my-cache').then((cache) => {
-        return cache.match(event.request.url).then((response) => {
-          console.log(
-            '캐싱된 이미지, 오디오, 비디오 파일 요청:',
-            event.request.url,
-          );
-          return response;
-        });
+      caches.open('my-cache').then(async (cache) => {
+        const response = await cache.match(event.request.url);
+        console.log(
+          '캐싱된 이미지, 오디오, 비디오 파일 요청:',
+          event.request.url,
+        );
+        return response;
       }),
     );
   } else {

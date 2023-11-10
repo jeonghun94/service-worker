@@ -67,7 +67,13 @@
           <h4>동영상 콘텐츠가 없습니다</h4>
         </div>
 
-        <div
+        <iframe
+          class="border w-full h-96"
+          src="/test.html"
+          frameborder="0"
+        ></iframe>
+
+        <!-- <div
           v-if="item.contents?.htmls?.length > 0"
           class="flex flex-col gap-3"
         >
@@ -80,14 +86,14 @@
         </div>
         <div v-else>
           <h4>html 콘텐츠가 없습니다</h4>
-        </div>
+        </div> -->
 
-        <div v-if="item.contents?.pdf?.length > 0">
+        <!-- <div v-if="item.contents?.pdf?.length > 0">
           <vue-pdf-embed :source="item.contents?.pdf[0]" />
         </div>
         <div v-else>
           <h4>PDF 콘텐츠가 없습니다</h4>
-        </div>
+        </div> -->
       </div>
       <div v-else>
         <h4>콘텐츠가 없습니다</h4>
@@ -100,13 +106,14 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import VuePdfEmbed from 'vue-pdf-embed';
+// import VuePdfEmbed from 'vue-pdf-embed';
 import NavBar from '../components/NavBar.vue';
 import { URL } from '../constants';
 
 export default {
   name: 'DetailVue',
-  components: { VuePdfEmbed, NavBar },
+  // components: { VuePdfEmbed, NavBar },
+  components: { NavBar },
   setup() {
     const router = useRouter();
     const { courseCode } = router.currentRoute.value.params;

@@ -1,0 +1,25 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+p {
+  font-weight: 800;
+  color: blue;
+}
+
+.question {
+  margin-bottom: 15px;
+}
+
+.options {
+  margin-left: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
