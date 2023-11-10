@@ -97,7 +97,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeMount } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import VuePdfEmbed from 'vue-pdf-embed';
@@ -135,6 +135,11 @@ export default {
 
     onMounted(async () => {
       await getClassInfoDetail();
+
+      window.addEventListener('beforeinstallprompt', (event) => {
+        console.log('before install prompt');
+        event.prompt();
+      });
     });
 
     navigator.serviceWorker.addEventListener('message', (event) => {
@@ -147,6 +152,7 @@ export default {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       // Stash the event so it can be triggered later.
+      console.log(e);
       deferredPrompt.value = e;
     };
 
@@ -158,9 +164,8 @@ export default {
         deferredPrompt.value.prompt();
       }
     }; // 컴포넌트가 마운트되기 전에 이벤트 핸들러 등록
-    onBeforeMount(() => {
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    });
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     return {
       courseCode,

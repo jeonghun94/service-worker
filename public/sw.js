@@ -80,7 +80,7 @@ self.addEventListener('fetch', async (event) => {
 
 self.addEventListener('fetch', async (event) => {
   const imageAudioVideoRegex =
-    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf|html)$/i;
+    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf)$/i;
 
   if (imageAudioVideoRegex.test(event.request.url)) {
     event.respondWith(
