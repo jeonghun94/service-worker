@@ -79,7 +79,8 @@ export default {
       const urlParams = new URLSearchParams(queryString);
 
       if (urlParams.get('code')) {
-        await dispatch('user/setIsLogin');
+        await dispatch('user/setIsLogin', 'naver');
+        router.replace('/');
       }
     });
 
@@ -89,7 +90,7 @@ export default {
           Kakao.API.request({
             url: '/v2/user/me',
             success: function (response) {
-              dispatch('user/setIsLogin');
+              dispatch('user/setIsLogin', 'kakao');
               console.log(response);
             },
             fail: function (error) {

@@ -26,7 +26,6 @@
 /* eslint-disable */
 import axios from 'axios';
 import { ref, onBeforeMount } from 'vue';
-import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import NavBar from '../NavBar.vue';
 import { URL } from '../../constants';
@@ -37,10 +36,11 @@ export default {
     NavBar,
   },
   setup() {
-    const router = useRouter();
-    const { dispatch } = useStore();
+    const { dispatch, getters } = useStore();
     const classInfoData = ref([]);
     const apiPath = '/api/class-info';
+    const user = getters['user/getUser'];
+
     const getClassInfo = async () => {
       try {
         const response = await axios.get(`${URL + apiPath}`);
@@ -56,14 +56,8 @@ export default {
     };
 
     const handleLogout = async () => {
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-
-      await dispatch('user/setIsLogin');
-
-      if (urlParams.get('code')) {
-        router.push('/');
-      } else {
+      await dispatch('user/setIsLogin', false);
+      if (user.social.Kakao) {
         Kakao.Auth.logout();
       }
     };
