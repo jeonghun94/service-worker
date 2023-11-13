@@ -106,22 +106,7 @@ export default {
 
     const naverLogin = () => {
       const url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=mu6mOx8I3hV1m1RGR9RT&redirect_uri=http://localhost:5173&state=1234`;
-
-      console.log('==================url====================');
-      console.log(url);
-
-      const width = 500;
-      const height = 600;
-      const left = window.innerWidth / 2 - width / 2;
-      const top = window.innerHeight / 2 - height / 2;
-
       window.location.href = url;
-
-      //   window.open(
-      //     url,
-      //     'Naver Login',
-      //     `width=${width},height=${height},left=${left},top=${top}`,
-      //   );
     };
 
     return {
