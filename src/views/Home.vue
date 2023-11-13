@@ -1,60 +1,32 @@
 <template>
-  <NavBar />
-  <div
-    class="flex justify-between items-center text-xs border rounded-md p-2 m-2 w-full"
-    v-for="(item, index) in classInfoData"
-    :key="index"
-  >
-    <router-link :to="'/course/' + item.courseCode" class="text-black">
-      <div class="flex flex-col gap-3">
-        <h1 class="text-md">{{ item.courseName }}</h1>
-        <h2 class="self-start">{{ item.instructorName }}</h2>
-      </div>
-    </router-link>
-    <img class="w-14 h-14 rounded-md" :src="item.courseThumbnail" alt="logo" />
-  </div>
+  <LoginForm v-if="!isLogin" />
+  <CourseList v-else />
 </template>
 
 <script>
-import axios from 'axios';
-import { ref, onBeforeMount } from 'vue';
-import NavBar from '../components/NavBar.vue';
-import { URL } from '../constants';
+import { computed, watch } from 'vue';
+import { useStore } from 'vuex';
+import LoginForm from '../components/LoginForm.vue';
+import CourseList from '../components/course/CourseList.vue';
 
 export default {
   name: 'HomeVue',
   components: {
-    NavBar,
+    LoginForm,
+    CourseList,
   },
 
   setup() {
-    const classInfoData = ref([]);
-    const apiPath = '/api/class-info';
-    const getClassInfo = async () => {
-      try {
-        const response = await axios.get(`${URL + apiPath}`);
-        classInfoData.value = response.data;
-      } catch (err) {
-        if (navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: 'data',
-            url: apiPath,
-          });
-        }
-      }
-    };
+    const { getters } = useStore();
+    const isLogin = computed(() => getters['user/isLogin']);
+    console.log(isLogin, 'isLogin');
 
-    onBeforeMount(async () => {
-      await getClassInfo();
-      // console.log('onMounted: ', classInfoData.value);
-    });
-
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      classInfoData.value = JSON.parse(event.data);
+    watch(isLogin, (newVal) => {
+      console.log(newVal, 'newVal');
     });
 
     return {
-      classInfoData,
+      isLogin,
     };
   },
 };

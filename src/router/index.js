@@ -37,6 +37,10 @@ const routes = [
     path: '/service-worker',
     component: ServiceWorker,
   },
+  {
+    path: '/oauth',
+    component: ServiceWorker,
+  },
 ];
 
 const router = createRouter({
