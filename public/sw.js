@@ -20,6 +20,36 @@ const isResourceCached = async (cache, resource) => {
   return !!cachedResponse;
 };
 
+const extractResources = (htmlText, regex) => {
+  const resources = [];
+  let match;
+  while ((match = regex.exec(htmlText)) !== null) {
+    resources.push(match[1]);
+  }
+  return resources;
+};
+
+const fetchAndCacheResource = async (cache, resource) => {
+  const baseUrl = 'http://localhost:3000/';
+  try {
+    const resourceUrl = new URL(resource, baseUrl).toString();
+    const response = await fetch(resourceUrl);
+
+    await cache.put(resourceUrl, response.clone());
+  } catch (error) {
+    console.error(`${resource} 캐싱 실패:`, error);
+  }
+};
+
+async function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 const cacheResource = async (cache, resource) => {
   try {
     if (await isResourceCached(cache, resource)) {
@@ -27,8 +57,58 @@ const cacheResource = async (cache, resource) => {
       return;
     }
 
-    const response = await fetch(resource);
-    await cache.put(resource, response.clone());
+    if (resource.endsWith('.html')) {
+      const networkResponse = await fetch(resource);
+      const htmlText = await networkResponse.text();
+
+      const scriptRegex = /<script\s+src=["'](.+?)["']\s*>/gi;
+      const cssRegex =
+        /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi;
+      const imgRegex = /<img\s+src=["']([^"']+)["'][^>]*>/gi;
+
+      const scriptPaths = extractResources(htmlText, scriptRegex);
+      const cssPaths = extractResources(htmlText, cssRegex);
+      const imgPaths = extractResources(htmlText, imgRegex);
+      const baseUrl = 'http://localhost:3000/';
+
+      const [scriptText, cssText, imgBlob] = await Promise.all([
+        fetch(new URL(scriptPaths[0], baseUrl).toString()).then(
+          (scriptResponse) => scriptResponse.text(),
+        ),
+        fetch(new URL(cssPaths[0], baseUrl).toString()).then((cssResponse) =>
+          cssResponse.text(),
+        ),
+        fetch(new URL(imgPaths[0], baseUrl).toString()).then((imgResponse) =>
+          imgResponse.blob(),
+        ),
+      ]);
+
+      // 가져온 데이터로 HTML 리소스를 대체합니다.
+      const updatedHtml = htmlText
+        .replace(
+          /<script\s+src=["'].+?["']\s*><\/script>/i,
+          `<script>${scriptText}</script>`,
+        )
+        .replace(
+          /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi,
+          `<style>${cssText}</style>`,
+        )
+        .replace(
+          /<img\s+src=["']([^"']+)["'][^>]*>/gi,
+          `<img src="data:image/png;base64,${await blobToBase64(imgBlob)}">`,
+        );
+
+      // 여기에서 변경된 HTML을 저장하거나 다른 용도로 사용할 수 있습니다.
+      const cacheResponse = new Response(updatedHtml, {
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+        },
+      });
+      await cache.put(resource, cacheResponse);
+    } else {
+      const response = await fetch(resource);
+      await cache.put(resource, response.clone());
+    }
   } catch (error) {
     console.log('리소스 캐싱 실패:', resource, error);
   }
@@ -37,6 +117,11 @@ const cacheResource = async (cache, resource) => {
 self.addEventListener('fetch', async (event) => {
   const cache = await caches.open('my-cache');
   const cachedResponse = await cache.match(event.request);
+
+  if (event.request.url.endsWith('.html')) {
+    console.log('html 요청');
+    return;
+  }
 
   if (cachedResponse) {
     return cachedResponse;

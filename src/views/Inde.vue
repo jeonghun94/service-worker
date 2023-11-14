@@ -72,11 +72,12 @@
           class="flex flex-col gap-3"
         >
           <h1 class="text-left my-3 text-blue-400">아이프레임 콘텐츠</h1>
+
           <iframe
             class="border w-full h-96"
-            :src="item.contents?.htmls[0]"
             frameborder="0"
-          ></iframe>
+            :src="item.contents?.htmls[0]"
+          />
         </div>
         <div v-else>
           <h4>html 콘텐츠가 없습니다</h4>
@@ -136,43 +137,16 @@ export default {
 
     onMounted(async () => {
       await getClassInfoDetail();
-
-      window.addEventListener('beforeinstallprompt', (event) => {
-        console.log('before install prompt');
-        event.prompt();
-      });
     });
 
     navigator.serviceWorker.addEventListener('message', (event) => {
       classInfoDetail.value = JSON.parse(event.data);
     });
 
-    const deferredPrompt = ref(null);
-
-    // beforeinstallprompt 이벤트 핸들러 등록
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      // Stash the event so it can be triggered later.
-      console.log(e);
-      deferredPrompt.value = e;
-    };
-
-    // install 메서드 정의
-    const installPWA = async () => {
-      console.log(deferredPrompt.value);
-
-      if (deferredPrompt.value) {
-        deferredPrompt.value.prompt();
-      }
-    }; // 컴포넌트가 마운트되기 전에 이벤트 핸들러 등록
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
     return {
       courseCode,
       classInfoDetail,
       handleBack,
-      installPWA,
     };
   },
 };
