@@ -79,6 +79,7 @@
             :src="item.contents?.htmls[0]"
           />
         </div>
+
         <div v-else>
           <h4>html 콘텐츠가 없습니다</h4>
         </div>
@@ -134,7 +135,6 @@ export default {
     const handleBack = () => {
       router.back();
     };
-
     onMounted(async () => {
       await getClassInfoDetail();
     });
