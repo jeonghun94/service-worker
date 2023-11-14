@@ -67,13 +67,7 @@
           <h4>동영상 콘텐츠가 없습니다</h4>
         </div>
 
-        <iframe
-          class="border w-full h-96"
-          src="/test.html"
-          frameborder="0"
-        ></iframe>
-
-        <!-- <div
+        <div
           v-if="item.contents?.htmls?.length > 0"
           class="flex flex-col gap-3"
         >
@@ -86,7 +80,7 @@
         </div>
         <div v-else>
           <h4>html 콘텐츠가 없습니다</h4>
-        </div> -->
+        </div>
 
         <!-- <div v-if="item.contents?.pdf?.length > 0">
           <vue-pdf-embed :source="item.contents?.pdf[0]" />

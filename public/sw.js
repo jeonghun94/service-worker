@@ -10,9 +10,6 @@ self.addEventListener('install', function (event) {
         '/offline.html',
         '/testVideo.mp4',
         '/img/icons/msapplication-icon-144x144.png',
-        '/js/test.js',
-        '/css/test.css',
-        '/test.html',
       ]);
     }),
   );
@@ -105,14 +102,6 @@ self.addEventListener('fetch', async (event) => {
       }),
     );
   }
-});
-
-self.addEventListener('online', () => {
-  console.log('온라인 상태');
-});
-
-self.addEventListener('offline', () => {
-  console.log('오프라인 상태');
 });
 
 self.addEventListener('message', (event) => {
