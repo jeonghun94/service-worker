@@ -73,11 +73,15 @@
         >
           <h1 class="text-left my-3 text-blue-400">아이프레임 콘텐츠</h1>
 
-          <iframe
+          <!-- <iframe
             class="border w-full h-96"
             frameborder="0"
             :src="item.contents?.htmls[0]"
-          />
+          /> -->
+
+          <div class="border w-full h-96">
+            <html lang="ko" v-html="dynamicHTML"></html>
+          </div>
         </div>
 
         <div v-else>
@@ -113,7 +117,7 @@ export default {
   setup() {
     const router = useRouter();
     const { courseCode } = router.currentRoute.value.params;
-
+    const dynamicHTML = ref('');
     const classInfoDetail = ref({});
     const apiPath = `/api/class-info-detail?courseCode=${courseCode}`;
     const getClassInfoDetail = async () => {
@@ -132,21 +136,35 @@ export default {
       }
     };
 
+    const getHtml = async () => {
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'html',
+          cachedUrl: 'http://localhost:3000/testIframe.html',
+        });
+      }
+    };
+
     const handleBack = () => {
       router.back();
     };
     onMounted(async () => {
       await getClassInfoDetail();
-    });
-
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      classInfoDetail.value = JSON.parse(event.data);
+      await getHtml();
+      navigator.serviceWorker.addEventListener('message', async (event) => {
+        if (event.data.type === 'html') {
+          dynamicHTML.value = await event.data.data;
+        } else if (event.data.type === 'data') {
+          classInfoDetail.value = await JSON.parse(event.data.data);
+        }
+      });
     });
 
     return {
       courseCode,
       classInfoDetail,
       handleBack,
+      dynamicHTML,
     };
   },
 };

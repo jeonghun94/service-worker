@@ -67,7 +67,7 @@ export default {
     });
 
     navigator.serviceWorker.addEventListener('message', (event) => {
-      classInfoData.value = JSON.parse(event.data);
+      classInfoData.value = JSON.parse(event.data.data);
     });
 
     return {
