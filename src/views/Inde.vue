@@ -73,13 +73,15 @@
         >
           <h1 class="text-left my-3 text-blue-400">아이프레임 콘텐츠</h1>
 
-          <!-- <iframe
-            class="border w-full h-96"
-            frameborder="0"
-            :src="item.contents?.htmls[0]"
-          /> -->
+          <div v-if="isOnline">
+            <iframe
+              class="border w-full h-96"
+              :src="htmls[htmlsIndex]"
+              frameborder="0"
+            />
+          </div>
 
-          <div class="border w-full h-96">
+          <div v-else class="border w-full h-96">
             <html lang="ko" v-html="dynamicHTML"></html>
           </div>
         </div>
@@ -88,6 +90,20 @@
           <h4>html 콘텐츠가 없습니다</h4>
         </div>
 
+        <div class="w-full p-2 flex justify-between">
+          <button
+            class="bg-red-300 text-white p-2 rounded-md"
+            @click="handleHtmlChange(-1)"
+          >
+            이전 HTML
+          </button>
+          <button
+            class="bg-blue-300 text-white p-2 rounded-md"
+            @click="handleHtmlChange(1)"
+          >
+            다음 HTML
+          </button>
+        </div>
         <!-- <div v-if="item.contents?.pdf?.length > 0">
           <vue-pdf-embed :source="item.contents?.pdf[0]" />
         </div>
@@ -103,7 +119,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 // import VuePdfEmbed from 'vue-pdf-embed';
@@ -120,6 +136,14 @@ export default {
     const dynamicHTML = ref('');
     const classInfoDetail = ref({});
     const apiUrl = '/api/class-info';
+    const isOnline = ref(navigator.onLine);
+
+    const htmls = ref([]);
+    const htmlsIndex = ref(0);
+
+    const handleConnectionChange = () => {
+      isOnline.value = navigator.onLine;
+    };
 
     const sendMessageToServiceWorker = (type, url) => {
       navigator.serviceWorker.controller.postMessage({
@@ -137,8 +161,11 @@ export default {
 
     const fetchData = async () => {
       try {
-        const response = await axios.get(URL + apiUrl);
+        const response = await axios.get(
+          `${URL + apiUrl}-detail?courseCode=${courseCode}`,
+        );
         classInfoDetail.value = response.data;
+        htmls.value = response.data[0].contents?.htmls;
       } catch (error) {
         handleFetchError();
       }
@@ -157,12 +184,22 @@ export default {
       router.back();
     };
 
+    const handleHtmlChange = (change) => {
+      const newIndex = htmlsIndex.value + change;
+      if (newIndex >= 0 && newIndex < htmls.value.length) {
+        htmlsIndex.value = newIndex;
+      }
+    };
+
     onMounted(async () => {
       await fetchData();
       await getHtml();
+
+      window.addEventListener('online', handleConnectionChange);
+      window.addEventListener('offline', handleConnectionChange);
+
       navigator.serviceWorker.addEventListener('message', async (event) => {
         const { cachedData, type } = await JSON.parse(event.data);
-        console.log(cachedData, type);
         if (type === 'html') {
           dynamicHTML.value = cachedData;
         } else if (type === 'data') {
@@ -171,11 +208,21 @@ export default {
       });
     });
 
+    onBeforeUnmount(() => {
+      window.removeEventListener('online', handleConnectionChange);
+      window.removeEventListener('offline', handleConnectionChange);
+    });
+
     return {
       courseCode,
       classInfoDetail,
-      handleBack,
       dynamicHTML,
+      isOnline,
+      htmls,
+      htmlsIndex,
+
+      handleBack,
+      handleHtmlChange,
     };
   },
 };

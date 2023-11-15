@@ -187,7 +187,6 @@ self.addEventListener('fetch', async (event) => {
 
 self.addEventListener('message', async (event) => {
   const { type, url, courseCode } = event.data;
-  console.log('이벤트 수신', type, url, courseCode);
 
   if (type === 'html') {
     const cache = await caches.open('my-cache');
