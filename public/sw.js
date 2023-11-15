@@ -65,9 +65,9 @@ const cacheResource = async (cache, resource) => {
 
 const cachedHTML = async (courseCode, htmls) => {
   const htmlCache = await caches.open('html-cache');
-  const updatedHtmls = [];
 
-  for (const html of htmls) {
+  for (let i = 0; i < htmls.length; i++) {
+    const html = htmls[i];
     const networkResponse = await fetch(html);
     const htmlText = await networkResponse.text();
 
@@ -108,13 +108,12 @@ const cachedHTML = async (courseCode, htmls) => {
         `<img src="data:image/png;base64,${await blobToBase64(imgBlob)}">`,
       );
 
-    updatedHtmls.push({ html: updatedHtml });
+    htmlCache.put(`${courseCode}-${i}`, new Response(updatedHtml), {
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+      },
+    });
   }
-  await htmlCache.put(courseCode, new Response(updatedHtmls), {
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-    },
-  });
 };
 
 self.addEventListener('fetch', async (event) => {
