@@ -157,8 +157,15 @@ export default {
     const handleFetchError = () => {
       if (navigator.serviceWorker.controller) {
         sendMessageToServiceWorker('data', apiUrl);
+        sendMessageToServiceWorker('html', apiUrl);
       }
     };
+
+    // const fetchHTML = async () => {
+    //   if (navigator.serviceWorker.controller) {
+    //     sendMessageToServiceWorker('html', apiUrl);
+    //   }
+    // };
 
     const fetchData = async () => {
       try {
@@ -169,15 +176,6 @@ export default {
         htmls.value = response.data[0].contents?.htmls;
       } catch (error) {
         handleFetchError();
-      }
-    };
-
-    const getHtml = async () => {
-      if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'html',
-          url: 'http://localhost:3000/testIframe.html',
-        });
       }
     };
 
@@ -194,7 +192,6 @@ export default {
 
     onMounted(async () => {
       await fetchData();
-      await getHtml();
 
       window.addEventListener('online', handleConnectionChange);
       window.addEventListener('offline', handleConnectionChange);
@@ -203,6 +200,7 @@ export default {
         const { cachedData, type } = await JSON.parse(event.data);
         if (type === 'html') {
           dynamicHTML.value = cachedData;
+          console.log(cachedData, 'cachedData@@@@@@@@@@@@');
         } else if (type === 'data') {
           classInfoDetail.value = cachedData;
         }

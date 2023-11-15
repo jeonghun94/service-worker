@@ -19,7 +19,6 @@ export default {
   setup() {
     const { getters } = useStore();
     const isLogin = computed(() => getters['user/isLogin']);
-    console.log(isLogin, 'isLogin');
 
     watch(isLogin, (newVal) => {
       console.log(newVal, 'newVal');

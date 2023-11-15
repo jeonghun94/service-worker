@@ -53,64 +53,11 @@ async function blobToBase64(blob) {
 const cacheResource = async (cache, resource) => {
   try {
     if (await isResourceCached(cache, resource)) {
-      // console.log('이미 캐시된 리소스:', resource);
       return;
     }
 
-    if (resource.endsWith('.html')) {
-      const networkResponse = await fetch(resource);
-      const htmlText = await networkResponse.text();
-
-      const scriptRegex = /<script\s+src=["'](.+?)["']\s*>/gi;
-      const cssRegex =
-        /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi;
-      const imgRegex = /<img\s+src=["']([^"']+)["'][^>]*>/gi;
-
-      const scriptPaths = extractResources(htmlText, scriptRegex);
-      const cssPaths = extractResources(htmlText, cssRegex);
-      const imgPaths = extractResources(htmlText, imgRegex);
-      const baseUrl = 'http://localhost:3000/';
-
-      const [scriptText, cssText, imgBlob] = await Promise.all([
-        fetch(new URL(scriptPaths[0], baseUrl).toString()).then(
-          (scriptResponse) => scriptResponse.text(),
-        ),
-        fetch(new URL(cssPaths[0], baseUrl).toString()).then((cssResponse) =>
-          cssResponse.text(),
-        ),
-        fetch(new URL(imgPaths[0], baseUrl).toString()).then((imgResponse) =>
-          imgResponse.blob(),
-        ),
-      ]);
-
-      // 가져온 데이터로 HTML 리소스를 대체합니다.
-      const updatedHtml = htmlText
-        .replace(
-          /<script\s+src=["'].+?["']\s*><\/script>/i,
-          `<script>${scriptText}</script>`,
-        )
-        .replace(
-          /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi,
-          `<style>${cssText}</style>`,
-        )
-        .replace(
-          /<img\s+src=["']([^"']+)["'][^>]*>/gi,
-          `<img src="data:image/png;base64,${await blobToBase64(imgBlob)}">`,
-        );
-
-      // 여기에서 변경된 HTML을 저장하거나 다른 용도로 사용할 수 있습니다.
-      const cacheResponse = new Response(updatedHtml, {
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-        },
-      });
-      console.log('htlm');
-      const htmlCache = await caches.open('html-cache');
-      await htmlCache.put(resource, cacheResponse);
-    } else {
-      const response = await fetch(resource);
-      await cache.put(resource, response.clone());
-    }
+    const response = await fetch(resource);
+    await cache.put(resource, response.clone());
   } catch (error) {
     console.log('리소스 캐싱 실패:', resource, error);
   }
@@ -161,78 +108,13 @@ const cachedHTML = async (courseCode, htmls) => {
         `<img src="data:image/png;base64,${await blobToBase64(imgBlob)}">`,
       );
 
-    // 여기에서 변경된 HTML을 저장하거나 다른 용도로 사용할 수 있습니다.
-    const cacheResponse = new Response(updatedHtml, {
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-      },
-    });
-
     updatedHtmls.push({ html: updatedHtml });
   }
-  console.log(updatedHtmls, 'updatedHtmls');
-
-  await htmlCache.put(courseCode, new Response(JSON.stringify(updatedHtmls)), {
+  await htmlCache.put(courseCode, new Response(updatedHtmls), {
     headers: {
-      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Type': 'text/html; charset=utf-8',
     },
   });
-
-  const response = await (await htmlCache.match(courseCode)).json();
-
-  console.log(response, 'response[0].html');
-
-  // if (resource.endsWith('.html')) {
-  //   const networkResponse = await fetch(resource);
-  //   const htmlText = await networkResponse.text();
-
-  //   const scriptRegex = /<script\s+src=["'](.+?)["']\s*>/gi;
-  //   const cssRegex =
-  //     /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi;
-  //   const imgRegex = /<img\s+src=["']([^"']+)["'][^>]*>/gi;
-
-  //   const scriptPaths = extractResources(htmlText, scriptRegex);
-  //   const cssPaths = extractResources(htmlText, cssRegex);
-  //   const imgPaths = extractResources(htmlText, imgRegex);
-  //   const baseUrl = 'http://localhost:3000/';
-
-  //   const [scriptText, cssText, imgBlob] = await Promise.all([
-  //     fetch(new URL(scriptPaths[0], baseUrl).toString()).then(
-  //       (scriptResponse) => scriptResponse.text(),
-  //     ),
-  //     fetch(new URL(cssPaths[0], baseUrl).toString()).then((cssResponse) =>
-  //       cssResponse.text(),
-  //     ),
-  //     fetch(new URL(imgPaths[0], baseUrl).toString()).then((imgResponse) =>
-  //       imgResponse.blob(),
-  //     ),
-  //   ]);
-
-  //   // 가져온 데이터로 HTML 리소스를 대체합니다.
-  //   const updatedHtml = htmlText
-  //     .replace(
-  //       /<script\s+src=["'].+?["']\s*><\/script>/i,
-  //       `<script>${scriptText}</script>`,
-  //     )
-  //     .replace(
-  //       /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi,
-  //       `<style>${cssText}</style>`,
-  //     )
-  //     .replace(
-  //       /<img\s+src=["']([^"']+)["'][^>]*>/gi,
-  //       `<img src="data:image/png;base64,${await blobToBase64(imgBlob)}">`,
-  //     );
-
-  //   // 여기에서 변경된 HTML을 저장하거나 다른 용도로 사용할 수 있습니다.
-  //   const cacheResponse = new Response(updatedHtml, {
-  //     headers: {
-  //       'Content-Type': 'text/html; charset=utf-8',
-  //     },
-  //   });
-  //   console.log('htlm');
-  //   const htmlCache = await caches.open('html-cache');
-  //   await htmlCache.put(resource, cacheResponse);
-  // }
 };
 
 self.addEventListener('fetch', async (event) => {
@@ -260,7 +142,7 @@ self.addEventListener('fetch', async (event) => {
     await apiCache.put(`${path}`, cacheResponse);
 
     for (const item of data) {
-      if (item.contents && !item.contents.htmls) {
+      if (item.contents) {
         for (const content of [
           ...(item.contents.videos || []),
           ...(item.contents.images || []),
@@ -268,10 +150,8 @@ self.addEventListener('fetch', async (event) => {
         ]) {
           await cacheResource(cache, content);
         }
-      } else {
-        if (item.contents && item.contents?.htmls.length > 0) {
-          cachedHTML(item.courseCode, item.contents.htmls);
-        }
+
+        cachedHTML(item.courseCode, item.contents.htmls || []);
       }
     }
 
@@ -312,15 +192,15 @@ self.addEventListener('message', async (event) => {
   const { type, url, courseCode } = event.data;
 
   if (type === 'html') {
-    const cache = await caches.open('my-cache');
-    const response = await cache.match(url);
+    const cache = await caches.open('html-cache');
+    const response = await cache.match(courseCode);
     const cachedData = (await response.text()).toString();
     event.source.postMessage(JSON.stringify({ type: 'html', cachedData }));
   }
 
   if (type === 'data') {
     const apiCache = await caches.open('api-cache');
-    const response = await apiCache.match(`${url}`);
+    const response = await apiCache.match(url);
     const data = await response.text();
     const cachedData = courseCode
       ? JSON.parse(data).filter((item) => item.courseCode === courseCode)
