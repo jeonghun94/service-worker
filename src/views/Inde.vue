@@ -81,8 +81,23 @@
             />
           </div>
 
-          <div v-else class="border w-full h-96">
+          <div v-else class="border w-full h-96 box-border overflow-y-auto">
             <html lang="ko" v-html="dynamicHTML"></html>
+          </div>
+
+          <div class="w-full p-2 flex justify-between">
+            <button
+              class="bg-red-300 text-white p-2 rounded-md"
+              @click="handleHtmlChange(-1)"
+            >
+              이전 HTML
+            </button>
+            <button
+              class="bg-blue-300 text-white p-2 rounded-md"
+              @click="handleHtmlChange(1)"
+            >
+              다음 HTML
+            </button>
           </div>
         </div>
 
@@ -90,20 +105,6 @@
           <h4>html 콘텐츠가 없습니다</h4>
         </div>
 
-        <div class="w-full p-2 flex justify-between">
-          <button
-            class="bg-red-300 text-white p-2 rounded-md"
-            @click="handleHtmlChange(-1)"
-          >
-            이전 HTML
-          </button>
-          <button
-            class="bg-blue-300 text-white p-2 rounded-md"
-            @click="handleHtmlChange(1)"
-          >
-            다음 HTML
-          </button>
-        </div>
         <!-- <div v-if="item.contents?.pdf?.length > 0">
           <vue-pdf-embed :source="item.contents?.pdf[0]" />
         </div>
