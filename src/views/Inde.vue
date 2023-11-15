@@ -119,20 +119,28 @@ export default {
     const { courseCode } = router.currentRoute.value.params;
     const dynamicHTML = ref('');
     const classInfoDetail = ref({});
-    const apiPath = `/api/class-info-detail?courseCode=${courseCode}`;
-    const getClassInfoDetail = async () => {
+    const apiUrl = '/api/class-info';
+
+    const sendMessageToServiceWorker = (type, url) => {
+      navigator.serviceWorker.controller.postMessage({
+        type,
+        url,
+        courseCode,
+      });
+    };
+
+    const handleFetchError = () => {
+      if (navigator.serviceWorker.controller) {
+        sendMessageToServiceWorker('data', apiUrl);
+      }
+    };
+
+    const fetchData = async () => {
       try {
-        const response = await axios.get(URL + apiPath);
+        const response = await axios.get(URL + apiUrl);
         classInfoDetail.value = response.data;
       } catch (error) {
-        if (navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: 'data',
-            url: apiPath,
-            cacheingUrl: '/api/class-info',
-            cacheingKey: courseCode,
-          });
-        }
+        handleFetchError();
       }
     };
 
@@ -140,7 +148,7 @@ export default {
       if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({
           type: 'html',
-          cachedUrl: 'http://localhost:3000/testIframe.html',
+          url: 'http://localhost:3000/testIframe.html',
         });
       }
     };
@@ -148,14 +156,17 @@ export default {
     const handleBack = () => {
       router.back();
     };
+
     onMounted(async () => {
-      await getClassInfoDetail();
+      await fetchData();
       await getHtml();
       navigator.serviceWorker.addEventListener('message', async (event) => {
-        if (event.data.type === 'html') {
-          dynamicHTML.value = await event.data.data;
-        } else if (event.data.type === 'data') {
-          classInfoDetail.value = await JSON.parse(event.data.data);
+        const { cachedData, type } = await JSON.parse(event.data);
+        console.log(cachedData, type);
+        if (type === 'html') {
+          dynamicHTML.value = cachedData;
+        } else if (type === 'data') {
+          classInfoDetail.value = cachedData;
         }
       });
     });

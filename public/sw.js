@@ -116,6 +116,7 @@ const cacheResource = async (cache, resource) => {
 
 self.addEventListener('fetch', async (event) => {
   const cache = await caches.open('my-cache');
+  const apiCache = await caches.open('api-cache');
   const cachedResponse = await cache.match(event.request);
 
   if (cachedResponse) {
@@ -135,7 +136,7 @@ self.addEventListener('fetch', async (event) => {
     const url = new URL(event.request.url);
     const path = url.pathname + url.search;
 
-    await cache.put(`api-data-${path}`, cacheResponse);
+    await apiCache.put(`${path}`, cacheResponse);
 
     for (const item of data) {
       if (item.contents) {
@@ -184,54 +185,31 @@ self.addEventListener('fetch', async (event) => {
   }
 });
 
-self.addEventListener('message', (event) => {
-  console.log('이벤트 수신', event.data);
+self.addEventListener('message', async (event) => {
+  const { type, url, courseCode } = event.data;
+  console.log('이벤트 수신', type, url, courseCode);
 
-  if (event.data.type === 'html') {
-    caches.open('my-cache').then((cache) => {
-      cache.match(event.data.cachedUrl).then(async (response) => {
-        if (response) {
-          response.text().then((data) => {
-            event.source.postMessage({ type: 'html', data: data.toString() });
-          });
-        }
-      });
-    });
+  if (type === 'html') {
+    const cache = await caches.open('my-cache');
+    const response = await cache.match(url);
+    const cachedData = (await response.text()).toString();
+    event.source.postMessage(JSON.stringify({ type: 'html', cachedData }));
   }
 
-  if (event.data.type === 'data') {
-    caches.open('my-cache').then((cache) => {
-      cache.match(`api-data-${event.data.url}`).then(async (response) => {
-        if (response) {
-          response.text().then((data) => {
-            console.log('캐싱 데이터 있을때');
-            const myData = JSON.parse(data);
-            event.source.postMessage({
-              type: 'data',
-              data: JSON.stringify(myData),
-            });
-          });
-        } else {
-          console.log('캐싱 데이터 없을때');
-          cache
-            .match(`api-data-${event.data.cacheingUrl}`)
-            .then(async (response) => {
-              if (response) {
-                await response.text().then((data) => {
-                  const myData = JSON.parse(data);
-                  const testData = myData.filter(
-                    (item) => item.courseCode === event.data.cacheingKey,
-                  );
-                  event.source.postMessage({
-                    type: 'data',
-                    data: JSON.stringify(testData),
-                  });
-                });
-              }
-            });
-        }
-      });
-    });
+  if (type === 'data') {
+    const apiCache = await caches.open('api-cache');
+    const response = await apiCache.match(`${url}`);
+    const data = await response.text();
+    const cachedData = courseCode
+      ? JSON.parse(data).filter((item) => item.courseCode === courseCode)
+      : JSON.parse(data);
+
+    event.source.postMessage(
+      JSON.stringify({
+        type,
+        cachedData,
+      }),
+    );
   }
 });
 

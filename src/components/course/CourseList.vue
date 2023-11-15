@@ -25,7 +25,7 @@
 <script>
 /* eslint-disable */
 import axios from 'axios';
-import { ref, onBeforeMount } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import NavBar from '../NavBar.vue';
 import { URL } from '../../constants';
@@ -38,20 +38,28 @@ export default {
   setup() {
     const { dispatch, getters } = useStore();
     const classInfoData = ref([]);
-    const apiPath = '/api/class-info';
+    const apiUrl = '/api/class-info';
     const user = getters['user/getUser'];
 
-    const getClassInfo = async () => {
+    const sendMessageToServiceWorker = (type, url) => {
+      navigator.serviceWorker.controller.postMessage({
+        type,
+        url,
+      });
+    };
+
+    const handleFetchError = () => {
+      if (navigator.serviceWorker.controller) {
+        sendMessageToServiceWorker('data', apiUrl);
+      }
+    };
+
+    const fetchData = async () => {
       try {
-        const response = await axios.get(`${URL + apiPath}`);
+        const response = await axios.get(URL + apiUrl);
         classInfoData.value = response.data;
       } catch (err) {
-        if (navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: 'data',
-            url: apiPath,
-          });
-        }
+        handleFetchError();
       }
     };
 
@@ -62,17 +70,16 @@ export default {
       }
     };
 
-    onBeforeMount(async () => {
-      await getClassInfo();
-    });
-
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      classInfoData.value = JSON.parse(event.data.data);
+    onMounted(async () => {
+      await fetchData();
+      navigator.serviceWorker.addEventListener('message', async (event) => {
+        const { cachedData } = await JSON.parse(event.data);
+        classInfoData.value = cachedData;
+      });
     });
 
     return {
       classInfoData,
-
       handleLogout,
     };
   },
