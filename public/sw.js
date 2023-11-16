@@ -93,7 +93,7 @@ const cachedHTML = async (courseCode, htmls) => {
       ),
     ]);
 
-    // 가져온 데이터로 HTML 리소스를 대체합니다.
+    const base64Data = await blobToBase64(imgBlob);
     const updatedHtml = htmlText
       .replace(
         /<script\s+src=["'].+?["']\s*><\/script>/i,
@@ -103,10 +103,10 @@ const cachedHTML = async (courseCode, htmls) => {
         /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi,
         `<style>${cssText}</style>`,
       )
-      .replace(
-        /<img\s+src=["']([^"']+)["'][^>]*>/gi,
-        `<img src="data:image/png;base64,${await blobToBase64(imgBlob)}">`,
-      );
+      .replace(/<img\s+src=["']([^"']+)["']([^>]*)>/gi, (match, src, rest) => {
+        const updatedSrc = `data:image/png;base64,${base64Data}`;
+        return `<img src="${updatedSrc}"${rest}>`;
+      });
 
     htmlCache.put(`${courseCode}-${i}`, new Response(updatedHtml), {
       headers: {
@@ -126,7 +126,6 @@ self.addEventListener('fetch', async (event) => {
   }
 
   const networkResponse = await fetch(event.request);
-
   if (event.request.url.includes('/api')) {
     const data = await networkResponse.json();
     const cacheResponse = new Response(JSON.stringify(data), {
@@ -149,11 +148,9 @@ self.addEventListener('fetch', async (event) => {
         ]) {
           await cacheResource(cache, content);
         }
-
         cachedHTML(item.courseCode, item.contents.htmls || []);
       }
     }
-
     return cacheResponse;
   } else {
     await cache.put(event.request, networkResponse.clone());
