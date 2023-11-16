@@ -192,8 +192,11 @@ self.addEventListener('message', async (event) => {
 
   if (type === 'html') {
     const cache = await caches.open('html-cache');
-    const response = await cache.match(courseCode);
-    const cachedData = (await response.text()).toString();
+    const keys = await cache.keys();
+    const filteredKeys = keys.filter((item) => item.url.includes(courseCode));
+    const cachedData = await Promise.all(
+      filteredKeys.map(async (item) => (await cache.match(item.url)).text()),
+    );
     event.source.postMessage(JSON.stringify({ type: 'html', cachedData }));
   }
 

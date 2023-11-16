@@ -73,17 +73,12 @@
         >
           <h1 class="text-left my-3 text-blue-400">아이프레임 콘텐츠</h1>
 
-          <div v-if="isOnline">
-            <iframe
-              class="border w-full h-96"
-              :src="htmls[htmlsIndex]"
-              frameborder="0"
-            />
-          </div>
-
-          <div v-else class="border w-full h-96 box-border overflow-y-auto">
-            <html lang="ko" v-html="dynamicHTML"></html>
-          </div>
+          <iframe
+            class="border w-full h-96"
+            :src="isOnline ? htmls[htmlsIndex] : null"
+            :srcdoc="!isOnline ? htmls[htmlsIndex] : null"
+            frameborder="0"
+          />
 
           <div class="w-full p-2 flex justify-between">
             <button
@@ -104,13 +99,6 @@
         <div v-else>
           <h4>html 콘텐츠가 없습니다</h4>
         </div>
-
-        <!-- <div v-if="item.contents?.pdf?.length > 0">
-          <vue-pdf-embed :source="item.contents?.pdf[0]" />
-        </div>
-        <div v-else>
-          <h4>PDF 콘텐츠가 없습니다</h4>
-        </div> -->
       </div>
       <div v-else>
         <h4>콘텐츠가 없습니다</h4>
@@ -161,12 +149,6 @@ export default {
       }
     };
 
-    // const fetchHTML = async () => {
-    //   if (navigator.serviceWorker.controller) {
-    //     sendMessageToServiceWorker('html', apiUrl);
-    //   }
-    // };
-
     const fetchData = async () => {
       try {
         const response = await axios.get(
@@ -192,15 +174,13 @@ export default {
 
     onMounted(async () => {
       await fetchData();
-
       window.addEventListener('online', handleConnectionChange);
       window.addEventListener('offline', handleConnectionChange);
 
       navigator.serviceWorker.addEventListener('message', async (event) => {
         const { cachedData, type } = await JSON.parse(event.data);
         if (type === 'html') {
-          dynamicHTML.value = cachedData;
-          console.log(cachedData, 'cachedData@@@@@@@@@@@@');
+          htmls.value = cachedData;
         } else if (type === 'data') {
           classInfoDetail.value = cachedData;
         }
