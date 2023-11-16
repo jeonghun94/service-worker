@@ -29,18 +29,6 @@ const extractResources = (htmlText, regex) => {
   return resources;
 };
 
-const fetchAndCacheResource = async (cache, resource) => {
-  const baseUrl = 'http://localhost:3000/';
-  try {
-    const resourceUrl = new URL(resource, baseUrl).toString();
-    const response = await fetch(resourceUrl);
-
-    await cache.put(resourceUrl, response.clone());
-  } catch (error) {
-    console.error(`${resource} 캐싱 실패:`, error);
-  }
-};
-
 async function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -62,110 +50,97 @@ const cacheResource = async (cache, resource) => {
 
 const cachedHTML = async (courseCode, htmls) => {
   const htmlCache = await caches.open('html-cache');
+  const baseUrl = 'http://localhost:3000/';
 
   for (let i = 0; i < htmls.length; i++) {
-    const html = htmls[i];
-    const networkResponse = await fetch(html);
-    const htmlText = await networkResponse.text();
+    const currentHTML = htmls[i];
+    const networkResponse = await fetch(currentHTML);
+    const currentHTMLText = await networkResponse.text();
 
     const scriptRegex = /<script\s+src=["'](.+?)["']\s*>/gi;
     const cssRegex =
       /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi;
-    const imgRegex = /<img\s+src=["']([^"']+)["'][^>]*>/gi;
+    const imgRegex = /<img\s+src=["']([^"']+)["']([^>]*)>/gi;
 
-    const baseUrl = 'http://localhost:3000/';
-    const scriptPaths = extractResources(htmlText, scriptRegex);
-    const cssPaths = extractResources(htmlText, cssRegex);
-    const imgPaths = extractResources(htmlText, imgRegex);
+    const scriptPaths = extractResources(currentHTMLText, scriptRegex);
+    const cssPaths = extractResources(currentHTMLText, cssRegex);
+    const imgPaths = extractResources(currentHTMLText, imgRegex);
 
-    const [scriptText, cssText, imgBlob] = await Promise.all([
-      fetch(new URL(scriptPaths[0], baseUrl).toString()).then(
-        (scriptResponse) => scriptResponse.text(),
-      ),
-      fetch(new URL(cssPaths[0], baseUrl).toString()).then((cssResponse) =>
-        cssResponse.text(),
-      ),
-      fetch(new URL(imgPaths[0], baseUrl).toString()).then((imgResponse) =>
-        imgResponse.blob(),
-      ),
-    ]);
+    const scriptResources = await Promise.all(
+      scriptPaths.map(async (src) => {
+        const response = await fetch(new URL(src, baseUrl).toString());
+        return { src, text: `<script>${await response.text()}</script>` };
+      }),
+    );
 
-    const t = scriptPaths.map(async (src) => {
-      const response = await fetch(new URL(src, baseUrl).toString());
-      return { src, text: `<script>${await response.text()}</script>` };
-    });
+    const cssResources = await Promise.all(
+      cssPaths.map(async (src) => {
+        const response = await fetch(new URL(src, baseUrl).toString());
+        return { src, text: `<style>${await response.text()}</style>` };
+      }),
+    );
 
-    const csst = cssPaths.map(async (src) => {
-      const response = await fetch(new URL(src, baseUrl).toString());
-      return { src, text: `<style>${await response.text()}</style>` };
-    });
+    const imgResources = await Promise.all(
+      imgPaths.map(async (src) => {
+        const response = await fetch(new URL(src, baseUrl).toString());
+        const blob = await blobToBase64(await response.blob());
+        return { src, blob };
+      }),
+    );
 
-    const imgt = imgPaths.map(async (src) => {
-      const response = await fetch(new URL(src, baseUrl).toString());
-      const blob = await blobToBase64(await response.blob());
-      return { src, blob };
-    });
+    const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    async function replaceScriptSrc(htmlText, t, type) {
-      let updatedHtml = htmlText;
+    async function replaceResources(currentText, resources, type) {
+      let updatedText = currentText;
 
-      for (const scriptItem of t) {
-        const { src, text, blob } = await scriptItem;
-        let r = '';
+      for (const { src, text, blob } of resources) {
+        let regexPattern = '';
+
         if (type === 'script') {
-          (r = `<script\\s+src=["']${escapeRegExp(
+          regexPattern = `<script\\s+src=["']${escapeRegExp(
             src,
-          )}["']\\s*>([\\s\\S]*?)<\\/script>`),
-            'gi';
+          )}["']\\s*>([\\s\\S]*?)<\\/script>`;
         } else if (type === 'style') {
-          (r = `<link\\s+rel=["']stylesheet["']\\s+href=["']${escapeRegExp(
+          regexPattern = `<link\\s+rel=["']stylesheet["']\\s+href=["']${escapeRegExp(
             src,
-          )}["'][^>]*>`),
-            'gi';
+          )}["'][^>]*>`;
         } else if (type === 'img') {
-          (r = `<img\\s+src=["']${escapeRegExp(src)}["']([^>]*)>`), 'gi';
+          regexPattern = `<img\\s+src=["']${escapeRegExp(src)}["']([^>]*)>`;
         }
 
-        const scriptRegex = new RegExp(r);
+        const resourceRegex = new RegExp(regexPattern, 'gi');
         if (type !== 'img') {
-          updatedHtml = updatedHtml.replace(scriptRegex, text);
+          updatedText = updatedText.replace(resourceRegex, text);
         } else {
-          updatedHtml = updatedHtml.replace(scriptRegex, (match, src, rest) => {
+          updatedText = updatedText.replace(resourceRegex, (match, rest) => {
             const updatedSrc = `data:image/png;base64,${blob}`;
             return `<img src="${updatedSrc}"${rest}>`;
           });
         }
       }
 
-      return updatedHtml;
+      return updatedText;
     }
 
-    function escapeRegExp(str) {
-      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
+    let updatedHTMLText = currentHTMLText;
 
-    let updatedHtml = '';
+    updatedHTMLText = await replaceResources(
+      currentHTMLText,
+      scriptResources,
+      'script',
+    );
+    updatedHTMLText = await replaceResources(
+      updatedHTMLText,
+      cssResources,
+      'style',
+    );
+    updatedHTMLText = await replaceResources(
+      updatedHTMLText,
+      imgResources,
+      'img',
+    );
 
-    updatedHtml = await replaceScriptSrc(htmlText, t, 'script');
-    updatedHtml = await replaceScriptSrc(updatedHtml, csst, 'style');
-    updatedHtml = await replaceScriptSrc(updatedHtml, imgt, 'img');
-    console.log(updatedHtml);
-
-    // const updatedHtml = htmlText
-    //   .replace(
-    //     /<script\s+src=["'].+?["']\s*><\/script>/i,
-    //     `<script>${scriptText}</script>`,
-    //   )
-    //   .replace(
-    //     /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi,
-    //     `<style>${cssText}</style>`,
-    //   )
-    //   .replace(/<img\s+src=["']([^"']+)["']([^>]*)>/gi, (match, src, rest) => {
-    //     const updatedSrc = `data:image/png;base64,${base64Data}`;
-    //     return `<img src="${updatedSrc}"${rest}>`;
-    //   });
-
-    htmlCache.put(`${courseCode}-${i}`, new Response(updatedHtml), {
+    htmlCache.put(`${courseCode}-${i}`, new Response(updatedHTMLText), {
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
       },
