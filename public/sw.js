@@ -52,10 +52,7 @@ async function blobToBase64(blob) {
 
 const cacheResource = async (cache, resource) => {
   try {
-    if (await isResourceCached(cache, resource)) {
-      return;
-    }
-
+    if (await isResourceCached(cache, resource)) return;
     const response = await fetch(resource);
     await cache.put(resource, response.clone());
   } catch (error) {
@@ -76,10 +73,10 @@ const cachedHTML = async (courseCode, htmls) => {
       /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi;
     const imgRegex = /<img\s+src=["']([^"']+)["'][^>]*>/gi;
 
+    const baseUrl = 'http://localhost:3000/';
     const scriptPaths = extractResources(htmlText, scriptRegex);
     const cssPaths = extractResources(htmlText, cssRegex);
     const imgPaths = extractResources(htmlText, imgRegex);
-    const baseUrl = 'http://localhost:3000/';
 
     const [scriptText, cssText, imgBlob] = await Promise.all([
       fetch(new URL(scriptPaths[0], baseUrl).toString()).then(
@@ -93,20 +90,80 @@ const cachedHTML = async (courseCode, htmls) => {
       ),
     ]);
 
-    const base64Data = await blobToBase64(imgBlob);
-    const updatedHtml = htmlText
-      .replace(
-        /<script\s+src=["'].+?["']\s*><\/script>/i,
-        `<script>${scriptText}</script>`,
-      )
-      .replace(
-        /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi,
-        `<style>${cssText}</style>`,
-      )
-      .replace(/<img\s+src=["']([^"']+)["']([^>]*)>/gi, (match, src, rest) => {
-        const updatedSrc = `data:image/png;base64,${base64Data}`;
-        return `<img src="${updatedSrc}"${rest}>`;
-      });
+    const t = scriptPaths.map(async (src) => {
+      const response = await fetch(new URL(src, baseUrl).toString());
+      return { src, text: `<script>${await response.text()}</script>` };
+    });
+
+    const csst = cssPaths.map(async (src) => {
+      const response = await fetch(new URL(src, baseUrl).toString());
+      return { src, text: `<style>${await response.text()}</style>` };
+    });
+
+    const imgt = imgPaths.map(async (src) => {
+      const response = await fetch(new URL(src, baseUrl).toString());
+      const blob = await blobToBase64(await response.blob());
+      return { src, blob };
+    });
+
+    async function replaceScriptSrc(htmlText, t, type) {
+      let updatedHtml = htmlText;
+
+      for (const scriptItem of t) {
+        const { src, text, blob } = await scriptItem;
+        let r = '';
+        if (type === 'script') {
+          (r = `<script\\s+src=["']${escapeRegExp(
+            src,
+          )}["']\\s*>([\\s\\S]*?)<\\/script>`),
+            'gi';
+        } else if (type === 'style') {
+          (r = `<link\\s+rel=["']stylesheet["']\\s+href=["']${escapeRegExp(
+            src,
+          )}["'][^>]*>`),
+            'gi';
+        } else if (type === 'img') {
+          (r = `<img\\s+src=["']${escapeRegExp(src)}["']([^>]*)>`), 'gi';
+        }
+
+        const scriptRegex = new RegExp(r);
+        if (type !== 'img') {
+          updatedHtml = updatedHtml.replace(scriptRegex, text);
+        } else {
+          updatedHtml = updatedHtml.replace(scriptRegex, (match, src, rest) => {
+            const updatedSrc = `data:image/png;base64,${blob}`;
+            return `<img src="${updatedSrc}"${rest}>`;
+          });
+        }
+      }
+
+      return updatedHtml;
+    }
+
+    function escapeRegExp(str) {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    let updatedHtml = '';
+
+    updatedHtml = await replaceScriptSrc(htmlText, t, 'script');
+    updatedHtml = await replaceScriptSrc(updatedHtml, csst, 'style');
+    updatedHtml = await replaceScriptSrc(updatedHtml, imgt, 'img');
+    console.log(updatedHtml);
+
+    // const updatedHtml = htmlText
+    //   .replace(
+    //     /<script\s+src=["'].+?["']\s*><\/script>/i,
+    //     `<script>${scriptText}</script>`,
+    //   )
+    //   .replace(
+    //     /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi,
+    //     `<style>${cssText}</style>`,
+    //   )
+    //   .replace(/<img\s+src=["']([^"']+)["']([^>]*)>/gi, (match, src, rest) => {
+    //     const updatedSrc = `data:image/png;base64,${base64Data}`;
+    //     return `<img src="${updatedSrc}"${rest}>`;
+    //   });
 
     htmlCache.put(`${courseCode}-${i}`, new Response(updatedHtml), {
       headers: {
