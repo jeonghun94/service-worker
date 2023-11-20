@@ -9,10 +9,7 @@
         뒤로
       </button>
       <h1 class="font-bold">{{ courseCode }}</h1>
-      <button
-        class="flex items-center bg-gray-400 text-white"
-        @click="installPWA"
-      >
+      <button class="flex items-center bg-gray-400 text-white">
         <!-- 설치 -->
       </button>
     </div>
@@ -161,7 +158,7 @@ export default {
     };
 
     const handleBack = () => {
-      router.back();
+      router.push('/');
     };
 
     const handleHtmlChange = (change) => {

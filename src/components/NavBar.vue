@@ -28,8 +28,6 @@ export default {
     const navLinks = [
       { to: '/', label: 'Home' },
       { to: '/indexed-db', label: 'IndexedDB' },
-      // { to: '/service-worker', label: 'ServiceWorker' },
-      { to: '/vuex', label: 'Vuex' },
     ];
 
     return {
