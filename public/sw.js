@@ -29,15 +29,6 @@ const extractResources = (htmlText, regex) => {
   return resources;
 };
 
-async function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
 const cacheResource = async (cache, resource) => {
   try {
     if (await isResourceCached(cache, resource)) return;
@@ -46,6 +37,15 @@ const cacheResource = async (cache, resource) => {
   } catch (error) {
     console.log('리소스 캐싱 실패:', resource, error);
   }
+};
+
+const blobToBase64 = (blob) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 };
 
 const cachedHTML = async (courseCode, htmls) => {
