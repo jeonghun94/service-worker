@@ -48,6 +48,13 @@ const blobToBase64 = (blob) => {
   });
 };
 
+const extractUrlsFromCss = (cssText) => {
+  // const urlRegex = /url\(["']?([^"']+)["']?\)/gi;
+  const urlRegex = /url\(["']?([^"')]+)["']?\)/gi;
+  const matches = cssText.match(urlRegex);
+  return matches ? matches.map((match) => match.replace(urlRegex, '$1')) : [];
+};
+
 const cachedHTML = async (courseCode, htmls) => {
   const htmlCache = await caches.open('html-cache');
   const baseUrl = 'http://localhost:3000/';
@@ -76,7 +83,43 @@ const cachedHTML = async (courseCode, htmls) => {
     const cssResources = await Promise.all(
       cssPaths.map(async (src) => {
         const response = await fetch(new URL(src, baseUrl).toString());
-        return { src, text: `<style>${await response.text()}</style>` };
+        let cssText = await response.text();
+        const urls = extractUrlsFromCss(cssText);
+
+        await Promise.all(
+          urls.map(async (url) => {
+            console.log('url:', url);
+            const urlResponse = await fetch(url);
+            const dataUrl = await blobToBase64(await urlResponse.blob());
+            const fileExtention = url.split('.').pop().toLowerCase();
+            // const dataUrl = await blobToBase64(await urlResponse.blob());
+            switch (fileExtention) {
+              case 'webp':
+                cssText = cssText.replace(
+                  url,
+                  `data:image/webp;base64,${dataUrl}`,
+                );
+              case 'woff':
+                cssText = cssText.replace(
+                  url,
+                  `data:application/font-woff;base64,${dataUrl}`,
+                );
+              case 'woff2':
+                cssText = cssText.replace(
+                  url,
+                  `data:application/font-woff2;base64,${dataUrl}`,
+                );
+              default:
+                // 기본적으로는 일반적인 Data URL 형식 사용
+                return `data:;base64,${dataUrl}`;
+            }
+            //     // cssText = cssText.replace(url, `data:image/webp;base64,${dataUrl}`);
+            //     // console.log('Data URL:', dataUrl);
+            //     // await htmlCache.put(url, urlResponse);
+          }),
+        );
+
+        return { src, text: `<style>${cssText}</style>` };
       }),
     );
 
@@ -90,7 +133,7 @@ const cachedHTML = async (courseCode, htmls) => {
 
     const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    async function replaceResources(currentText, resources, type) {
+    const replaceResources = async (currentText, resources, type) => {
       let updatedText = currentText;
 
       for (const { src, text, blob } of resources) {
@@ -120,7 +163,7 @@ const cachedHTML = async (courseCode, htmls) => {
       }
 
       return updatedText;
-    }
+    };
 
     let updatedHTMLText = currentHTMLText;
 
@@ -155,6 +198,11 @@ self.addEventListener('fetch', async (event) => {
 
   if (cachedResponse) {
     return cachedResponse;
+  }
+
+  if (event.request.url.includes('.html')) {
+    console.log('html 요청:', event.request.url);
+    const url = new URL(event.request.url);
   }
 
   const networkResponse = await fetch(event.request);

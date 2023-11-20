@@ -13,10 +13,9 @@
         class="flex items-center bg-gray-400 text-white"
         @click="installPWA"
       >
-        설치
+        <!-- 설치 -->
       </button>
     </div>
-
     <div
       class="flex flex-col justify-between items-start gap-3 text-xs border p-2 w-full"
       v-for="(item, index) in classInfoDetail"
@@ -34,7 +33,7 @@
         />
       </div>
 
-      <div v-if="item?.contents" class="overflow-x-auto">
+      <div v-if="item?.contents" class="overflow-x-auto w-full">
         <h1 class="text-left my-3 text-blue-400">이미지 콘텐츠</h1>
         <div v-if="item.contents?.images?.length > 0" class="flex gap-3">
           <img
