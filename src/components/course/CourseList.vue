@@ -1,11 +1,7 @@
 <template>
   <NavBar />
   <div class="mt-8">
-    <div
-      v-for="(group, title) in filteredClassInfoData"
-      :key="title"
-      class="mb-5"
-    >
+    <div v-for="(group, title) in classInfoData" :key="title" class="mb-5">
       <h2 class="text-lg text-left text-blue-400 font-bold">{{ title }}</h2>
       <div
         v-for="(item, index) in group"
@@ -32,11 +28,32 @@
       </div>
     </div>
   </div>
+
+  <!-- <h1>test</h1>
+  <div
+    v-for="(item, index) in classInfoData"
+    :key="index"
+    class="flex justify-between items-center text-xs border rounded-md p-3 w-full my-3"
+  >
+    <router-link :to="'/course/' + item.courseCode" class="text-black">
+      <div class="flex flex-col gap-3">
+        <h1 class="self-start font-semibold text-[1.5rem]">
+          {{ item.courseName }}
+        </h1>
+        <p class="flex gap-1">
+          <span>{{ item.instructorName }}</span>
+          <span>/</span>
+          <span>{{ item.startDate }}</span>
+        </p>
+      </div>
+    </router-link>
+    <img class="w-14 h-14 rounded-md" :src="item.courseThumbnail" alt="logo" />
+  </div> -->
 </template>
 
 <script>
 import axios from 'axios';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { URL } from '../../constants';
 import NavBar from '../NavBar.vue';
 
@@ -62,29 +79,10 @@ export default {
       }
     };
 
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(URL + apiUrl);
-        classInfoData.value = response.data;
-      } catch (err) {
-        handleFetchError();
-      }
-    };
-
-    onMounted(async () => {
-      await fetchData();
-
-      navigator.serviceWorker.addEventListener('message', async (event) => {
-        const { cachedData } = await JSON.parse(event.data);
-        classInfoData.value = cachedData;
-      });
-    });
-
-    const filteredClassInfoData = computed(() => {
+    const filteredClassInfoData = (data) => {
       const today = new Date();
-      const yesterday = new Date(today);
-      const tomorrow = new Date(today);
-
+      const yesterday = new Date(today.getTime());
+      const tomorrow = new Date(today.getTime());
       yesterday.setDate(yesterday.getDate() - 1);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -96,9 +94,8 @@ export default {
         '내일 수강 목록': [],
       };
 
-      classInfoData.value.forEach((item) => {
+      data.forEach((item) => {
         const startDateString = formatDate(new Date(item.startDate));
-
         if (startDateString === formatDate(yesterday)) {
           groupedData['전일 수강 목록'].push(item);
         } else if (startDateString === formatDate(today)) {
@@ -109,10 +106,28 @@ export default {
       });
 
       return groupedData;
+    };
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(URL + apiUrl);
+        classInfoData.value = filteredClassInfoData(response.data);
+      } catch (err) {
+        handleFetchError();
+      }
+    };
+
+    onMounted(async () => {
+      await fetchData();
+      navigator.serviceWorker.addEventListener('message', async (event) => {
+        const { cachedData, type } = await JSON.parse(event.data);
+        if (type === 'data') {
+          classInfoData.value = filteredClassInfoData(cachedData);
+        }
+      });
     });
 
     return {
-      filteredClassInfoData,
       classInfoData,
     };
   },

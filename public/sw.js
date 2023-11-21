@@ -186,35 +186,24 @@ const cachedHTML = async (courseCode, htmls) => {
   }
 };
 
-self.addEventListener('fetch', async (event) => {
-  const cache = await caches.open('my-cache');
-  const apiCache = await caches.open('api-cache');
-  const cachedResponse = await cache.match(event.request);
+const cacheClassData = async (cache, data) => {
+  const today = new Date();
+  const yesterday = new Date(today);
+  const tomorrow = new Date(today);
 
-  if (cachedResponse) {
-    return cachedResponse;
-  }
+  yesterday.setDate(yesterday.getDate() - 1);
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
-  if (event.request.url.includes('.html')) {
-    console.log('html 요청:', event.request.url);
-    const url = new URL(event.request.url);
-  }
+  const formatDate = (date) => date.toISOString().split('T')[0];
 
-  const networkResponse = await fetch(event.request);
-  if (event.request.url.includes('/api')) {
-    const data = await networkResponse.json();
-    const cacheResponse = new Response(JSON.stringify(data), {
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-    });
+  for (const item of data) {
+    const startDateString = formatDate(new Date(item.startDate));
 
-    const url = new URL(event.request.url);
-    const path = url.pathname + url.search;
-
-    await apiCache.put(`${path}`, cacheResponse);
-
-    for (const item of data) {
+    if (
+      startDateString === formatDate(today) ||
+      startDateString === formatDate(yesterday) ||
+      startDateString === formatDate(tomorrow)
+    ) {
       if (item.contents) {
         for (const content of [
           ...(item.contents.videos || []),
@@ -226,7 +215,33 @@ self.addEventListener('fetch', async (event) => {
         cachedHTML(item.courseCode, item.contents.htmls || []);
       }
     }
-    return cacheResponse;
+  }
+};
+
+const cacheApiData = async (cache, data, event) => {
+  const cacheResponse = new Response(JSON.stringify(data), {
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+  });
+
+  const url = new URL(event.request.url);
+  const path = url.pathname + url.search;
+  await cache.put(`${path}`, cacheResponse);
+};
+
+self.addEventListener('fetch', async (event) => {
+  const cache = await caches.open('my-cache');
+  const apiCache = await caches.open('api-cache');
+  const cachedResponse = await cache.match(event.request);
+
+  if (cachedResponse) return cachedResponse;
+
+  const networkResponse = await fetch(event.request);
+  if (event.request.url.includes('/api')) {
+    const data = await networkResponse.json();
+    cacheApiData(apiCache, data, event);
+    cacheClassData(cache, data);
   } else {
     await cache.put(event.request, networkResponse.clone());
     return networkResponse;
@@ -239,22 +254,21 @@ self.addEventListener('fetch', async (event) => {
 
   if (imageAudioVideoRegex.test(event.request.url)) {
     event.respondWith(
-      caches.open('my-cache').then(async (cache) => {
-        const response = await cache.match(event.request.url);
-        console.log(
-          '캐싱된 이미지, 오디오, 비디오 파일 요청:',
-          event.request.url,
-        );
-        return response;
-      }),
+      caches
+        .open('my-cache')
+        .then(
+          async (cache) =>
+            (await cache.match(event.request.url)) || fetch(event.request),
+        ),
     );
   } else {
     event.respondWith(
-      caches.open('my-cache').then((cache) => {
-        return cache.match(event.request).then((response) => {
-          return response || fetch(event.request);
-        });
-      }),
+      caches
+        .open('my-cache')
+        .then(
+          async (cache) =>
+            (await cache.match(event.request)) || fetch(event.request),
+        ),
     );
   }
 });

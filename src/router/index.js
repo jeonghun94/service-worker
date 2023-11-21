@@ -5,10 +5,6 @@ import IndexedDB from '../views/IndexedDB.vue';
 
 const routes = [
   {
-    path: '/',
-    component: Home,
-  },
-  {
     path: '/course',
     children: [
       {
@@ -17,6 +13,11 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/',
+    component: Home,
+  },
+
   {
     path: '/index-db',
     component: IndexedDB,
