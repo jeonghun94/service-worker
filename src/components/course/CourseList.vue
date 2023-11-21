@@ -6,7 +6,7 @@
       :key="title"
       class="mb-5"
     >
-      <h2 class="text-lg font-bold text-left">{{ title }}</h2>
+      <h2 class="text-lg text-left text-blue-400 font-bold">{{ title }}</h2>
       <div
         v-for="(item, index) in group"
         :key="index"
@@ -32,31 +32,6 @@
       </div>
     </div>
   </div>
-  <!-- <div class="mt-8">
-    <div
-      class="flex justify-between items-center text-xs border rounded-md p-3 m-2 w-full"
-      v-for="(item, index) in classInfoData"
-      :key="index"
-    >
-      <router-link :to="'/course/' + item.courseCode" class="text-black">
-        <div class="flex flex-col gap-3">
-          <h1 class="self-start font-semibold text-[1.5rem]">
-            {{ item.courseName }}
-          </h1>
-          <p class="flex gap-1">
-            <span>{{ item.instructorName }}</span>
-            <span>/</span>
-            <span>{{ item.startDate }}</span>
-          </p>
-        </div>
-      </router-link>
-      <img
-        class="w-14 h-14 rounded-md"
-        :src="item.courseThumbnail"
-        alt="logo"
-      />
-    </div>
-  </div> -->
 </template>
 
 <script>
@@ -106,29 +81,29 @@ export default {
     });
 
     const filteredClassInfoData = computed(() => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date();
+      const yesterday = new Date(today);
+      const tomorrow = new Date(today);
 
-      const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayString = yesterday.toISOString().split('T')[0];
-
-      const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowString = tomorrow.toISOString().split('T')[0];
+
+      const formatDate = (date) => date.toISOString().split('T')[0];
 
       const groupedData = {
         '전일 수강 목록': [],
-        '오늘 수강 목록': [],
+        '금일 수강 목록': [],
         '내일 수강 목록': [],
       };
 
-      console.log(classInfoData.value);
       classInfoData.value.forEach((item) => {
-        if (item.startDate === yesterdayString) {
+        const startDateString = formatDate(new Date(item.startDate));
+
+        if (startDateString === formatDate(yesterday)) {
           groupedData['전일 수강 목록'].push(item);
-        } else if (item.startDate === today) {
-          groupedData['오늘 수강 목록'].push(item);
-        } else if (item.startDate === tomorrowString) {
+        } else if (startDateString === formatDate(today)) {
+          groupedData['금일 수강 목록'].push(item);
+        } else if (startDateString === formatDate(tomorrow)) {
           groupedData['내일 수강 목록'].push(item);
         }
       });

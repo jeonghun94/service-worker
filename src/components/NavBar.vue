@@ -7,9 +7,10 @@
       :key="link.to"
       :to="link.to"
       :class="{
-        'text-blue-500': $route.path === link.to,
+        'text-blue-400': $route.path === link.to,
         'text-black': $route.path !== link.to,
       }"
+      class="font-semibold"
       >{{ link.label }}</router-link
     >
   </div>
@@ -39,7 +40,7 @@ export default {
 
     const navLinks = [
       { to: '/', label: 'Home' },
-      { to: '/index-db', label: 'IndexedDB' },
+      // { to: '/index-db', label: 'IndexedDB' },
     ];
 
     const handleLogout = async () => {

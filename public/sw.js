@@ -88,7 +88,6 @@ const cachedHTML = async (courseCode, htmls) => {
 
         await Promise.all(
           urls.map(async (url) => {
-            console.log('url:', url);
             const urlResponse = await fetch(url);
             const dataUrl = await blobToBase64(await urlResponse.blob());
             const fileExtention = url.split('.').pop().toLowerCase();
@@ -110,12 +109,8 @@ const cachedHTML = async (courseCode, htmls) => {
                   `data:application/font-woff2;base64,${dataUrl}`,
                 );
               default:
-                // 기본적으로는 일반적인 Data URL 형식 사용
                 return `data:;base64,${dataUrl}`;
             }
-            //     // cssText = cssText.replace(url, `data:image/webp;base64,${dataUrl}`);
-            //     // console.log('Data URL:', dataUrl);
-            //     // await htmlCache.put(url, urlResponse);
           }),
         );
 
