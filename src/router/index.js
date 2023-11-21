@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import Detail from '../views/Detail.vue';
@@ -19,7 +18,7 @@ const routes = [
     ],
   },
   {
-    path: '/indexed-db',
+    path: '/index-db',
     component: IndexedDB,
   },
 ];
