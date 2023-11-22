@@ -3,6 +3,7 @@
     class="absolute top-0 left-0 w-full flex justify-between items-center gap-3 py-2 px-3 border-b bg-white"
   >
     <div>
+      <button id="install-button">설치</button>
       <button
         v-if="$route.path !== '/'"
         type="button"
