@@ -233,9 +233,8 @@ const cacheApiData = async (cache, data, event) => {
 self.addEventListener('fetch', async (event) => {
   const cache = await caches.open('my-cache');
   const apiCache = await caches.open('api-cache');
-  const cachedResponse = await cache.match(event.request);
-
-  if (cachedResponse) return cachedResponse;
+  // const cachedResponse = await cache.match(event.request);
+  // if (cachedResponse) return cachedResponse;
 
   const networkResponse = await fetch(event.request);
   if (event.request.url.includes('/api')) {
@@ -251,26 +250,18 @@ self.addEventListener('fetch', async (event) => {
 self.addEventListener('fetch', async (event) => {
   const imageAudioVideoRegex =
     /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf|html)$/i;
+  const isRegexMatched = imageAudioVideoRegex.test(event.request.url);
 
-  if (imageAudioVideoRegex.test(event.request.url)) {
-    event.respondWith(
-      caches
-        .open('my-cache')
-        .then(
-          async (cache) =>
-            (await cache.match(event.request.url)) || fetch(event.request),
-        ),
-    );
-  } else {
-    event.respondWith(
-      caches
-        .open('my-cache')
-        .then(
-          async (cache) =>
-            (await cache.match(event.request)) || fetch(event.request),
-        ),
-    );
-  }
+  event.respondWith(
+    caches
+      .open('my-cache')
+      .then(
+        async (cache) =>
+          (await cache.match(
+            isRegexMatched ? event.request.url : event.request,
+          )) || fetch(event.request),
+      ),
+  );
 });
 
 self.addEventListener('message', async (event) => {

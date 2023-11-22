@@ -1,14 +1,6 @@
 <template>
   <div class="flex flex-col box-border">
     <NavBar />
-    <!-- <div class="w-full my-3 flex justify-between items-center box-border">
-      <button
-        class="flex items-center bg-gray-400 text-white"
-        @click="handleBack"
-      >
-        뒤로
-      </button>
-    </div> -->
     <div
       class="flex flex-col justify-between items-start gap-3 text-xs p-2 w-full mt-8"
       v-for="(item, index) in classInfoDetail"
@@ -32,9 +24,6 @@
             :src="content"
             alt="logo"
           />
-        </div>
-        <div v-else>
-          <h4>이미지 콘텐츠가 없습니다</h4>
         </div>
 
         <div

@@ -3,14 +3,16 @@
   <div class="mt-8">
     <div v-for="(group, title) in classInfoData" :key="title" class="mb-5">
       <h2 class="text-lg text-left text-blue-400 font-bold">{{ title }}</h2>
-      <div
+      <router-link
         v-for="(item, index) in group"
         :key="index"
-        class="flex justify-between items-center text-xs border rounded-md p-3 w-full my-3"
+        :to="'/course/' + item.courseCode"
       >
-        <router-link :to="'/course/' + item.courseCode" class="text-black">
-          <div class="flex flex-col gap-3">
-            <h1 class="font-semibold text-[1.5rem]">
+        <div
+          class="flex justify-between items-center text-xs border rounded-md p-3 w-full my-3"
+        >
+          <div class="flex flex-col gap-3 text-black">
+            <h1 class="self-start font-semibold text-[1.5rem]">
               {{ item.courseName }}
             </h1>
             <p class="flex gap-1">
@@ -19,38 +21,22 @@
               <span>{{ item.startDate }}</span>
             </p>
           </div>
-        </router-link>
-        <img
-          class="w-14 h-14 rounded-md"
-          :src="item.courseThumbnail"
-          alt="logo"
-        />
+          <img
+            class="w-14 h-14 rounded-md"
+            :src="item.courseThumbnail"
+            alt="logo"
+          />
+        </div>
+      </router-link>
+      <div
+        v-if="group.length === 0"
+        class="flex justify-center items-center mt-3 font-semibold"
+      >
+        <h1 class="text-xl">{{ title }}이 없습니다.</h1>
       </div>
     </div>
   </div>
-
-  <!-- <h1>test</h1>
-  <div
-    v-for="(item, index) in classInfoData"
-    :key="index"
-    class="flex justify-between items-center text-xs border rounded-md p-3 w-full my-3"
-  >
-    <router-link :to="'/course/' + item.courseCode" class="text-black">
-      <div class="flex flex-col gap-3">
-        <h1 class="self-start font-semibold text-[1.5rem]">
-          {{ item.courseName }}
-        </h1>
-        <p class="flex gap-1">
-          <span>{{ item.instructorName }}</span>
-          <span>/</span>
-          <span>{{ item.startDate }}</span>
-        </p>
-      </div>
-    </router-link>
-    <img class="w-14 h-14 rounded-md" :src="item.courseThumbnail" alt="logo" />
-  </div> -->
 </template>
-
 <script>
 import axios from 'axios';
 import { ref, onMounted } from 'vue';
