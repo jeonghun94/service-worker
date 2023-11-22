@@ -55,8 +55,21 @@ const extractUrlsFromCss = (cssText) => {
   return matches ? matches.map((match) => match.replace(urlRegex, '$1')) : [];
 };
 
-const cachedHTML = async (courseCode, htmls) => {
+const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
+  // await caches.delete('html-cache');
   const htmlCache = await caches.open('html-cache');
+  const htmlCacheKeys = await htmlCache.keys();
+
+  const keysToDelete = htmlCacheKeys.filter((key) => {
+    const keyUrl = key.url;
+    const keyCourseCode = keyUrl
+      .substring(keyUrl.lastIndexOf('/') + 1)
+      .split('-')[0];
+    return !updatedCourseCodes.includes(keyCourseCode);
+  });
+
+  await Promise.all(keysToDelete.map((key) => htmlCache.delete(key)));
+
   const baseUrl = 'http://localhost:3000/';
 
   for (let i = 0; i < htmls.length; i++) {
@@ -187,32 +200,30 @@ const cachedHTML = async (courseCode, htmls) => {
 };
 
 const cacheClassData = async (cache, data) => {
+  const updatedCourseCodes = [];
   const today = new Date();
   const yesterday = new Date(today);
   const tomorrow = new Date(today);
-
   yesterday.setDate(yesterday.getDate() - 1);
   tomorrow.setDate(tomorrow.getDate() + 1);
-
   const formatDate = (date) => date.toISOString().split('T')[0];
 
-  for (const item of data) {
-    const startDateString = formatDate(new Date(item.startDate));
-
+  for (const { contents, courseCode, startDate } of data) {
+    const startDateString = formatDate(new Date(startDate));
     if (
-      startDateString === formatDate(today) ||
-      startDateString === formatDate(yesterday) ||
-      startDateString === formatDate(tomorrow)
+      contents &&
+      (startDateString === formatDate(today) ||
+        startDateString === formatDate(yesterday) ||
+        startDateString === formatDate(tomorrow))
     ) {
-      if (item.contents) {
-        for (const content of [
-          ...(item.contents.videos || []),
-          ...(item.contents.images || []),
-          ...(item.contents.pdf || []),
-        ]) {
-          await cacheResource(cache, content);
-        }
-        cachedHTML(item.courseCode, item.contents.htmls || []);
+      const { videos = [], images = [], pdf = [], htmls = [] } = contents;
+      for (const content of [...videos, ...images, ...pdf]) {
+        await cacheResource(cache, content);
+      }
+
+      if (htmls.length > 0) {
+        updatedCourseCodes.push(courseCode);
+        cachedHTML(courseCode, updatedCourseCodes, htmls);
       }
     }
   }
