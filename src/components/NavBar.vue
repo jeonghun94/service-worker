@@ -1,9 +1,9 @@
 <template>
+  <InstallBanner />
   <div
     class="absolute top-0 left-0 w-full flex justify-between items-center gap-3 py-2 px-3 border-b bg-white"
   >
     <div>
-      <button id="install-button">설치</button>
       <button
         v-if="$route.path !== '/'"
         type="button"
@@ -43,6 +43,7 @@
 /* eslint-disable */
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
+import InstallBanner from './InstallBanner.vue';
 
 export default {
   name: 'NavBar',
@@ -51,31 +52,27 @@ export default {
     const { path } = router.currentRoute.value;
     const { dispatch, getters } = useStore();
     const user = getters['user/getUser'];
-
     const navLinks = [
       { to: '/', label: 'Home' },
       // { to: '/index-db', label: 'IndexedDB' },
     ];
-
     const handleBack = () => {
       router.push('/');
     };
-
     const handleLogout = async () => {
       await dispatch('user/setIsLogin', false);
       if (user.social.Kakao) {
         Kakao.Auth.logout();
       }
     };
-
     return {
       navLinks,
       router,
       path,
-
       handleLogout,
       handleBack,
     };
   },
+  components: { InstallBanner },
 };
 </script>

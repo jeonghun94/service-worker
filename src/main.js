@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import { MotionPlugin } from '@vueuse/motion';
 import './style.css';
 import App from './App.vue';
 import './registerServiceWorker';
@@ -34,7 +35,8 @@ window.addEventListener('beforeinstallprompt', (event) => {
 });
 
 window.addEventListener('appinstalled', (event) => {
+  localStorage.setItem('isInstallable', true);
   console.log('App installed:', event);
 });
 Kakao.init('21a3ba5a34d345b07bbad4098bb4619f');
-createApp(App).use(router).use(store).mount('#app');
+createApp(App).use(router).use(store).use(MotionPlugin).mount('#app');
