@@ -2,10 +2,10 @@
   <InstallBanner />
   <NavBar />
   <div class="mt-8">
-    <div v-for="(group, title) in classInfoData" :key="title" class="mb-5">
-      <h2 class="text-lg text-left text-blue-400 font-bold">{{ title }}</h2>
+    <div class="mb-5">
+      <h2 class="text-lg text-left text-blue-400 font-bold">수강목록</h2>
       <router-link
-        v-for="(item, index) in group"
+        v-for="(item, index) in classInfoData"
         :key="index"
         :to="'/course/' + item.courseCode"
       >
@@ -29,12 +29,6 @@
           />
         </div>
       </router-link>
-      <div
-        v-if="group.length === 0"
-        class="flex justify-center items-center mt-3 font-semibold"
-      >
-        <h1 class="text-xl">{{ title }}이 없습니다.</h1>
-      </div>
     </div>
   </div>
 </template>
@@ -100,7 +94,7 @@ export default {
     const fetchData = async () => {
       try {
         const response = await axios.get(URL + apiUrl);
-        classInfoData.value = filteredClassInfoData(response.data);
+        classInfoData.value = response.data;
       } catch (err) {
         handleFetchError();
       }
