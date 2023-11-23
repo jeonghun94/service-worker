@@ -8,7 +8,6 @@ import store from './store';
 
 /* eslint-disable */
 window.addEventListener('beforeinstallprompt', (event) => {
-  // 설치 프롬프트를 막고 사용자 지정 버튼을 만들어 프롬프트를 수동으로 트리거하는 예제
   event.preventDefault();
   const installBanner = document.querySelector('#installBanner');
 

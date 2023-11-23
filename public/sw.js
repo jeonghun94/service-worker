@@ -244,8 +244,6 @@ const cacheApiData = async (cache, data, event) => {
 self.addEventListener('fetch', async (event) => {
   const cache = await caches.open('my-cache');
   const apiCache = await caches.open('api-cache');
-  // const cachedResponse = await cache.match(event.request);
-  // if (cachedResponse) return cachedResponse;
 
   const networkResponse = await fetch(event.request);
   if (event.request.url.includes('/api')) {
