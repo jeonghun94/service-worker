@@ -1,5 +1,4 @@
 <template>
-  <InstallBanner />
   <div
     class="absolute top-0 left-0 w-full flex justify-between items-center gap-3 py-2 px-3 border-b bg-white"
   >
@@ -53,7 +52,7 @@ export default {
     const { dispatch, getters } = useStore();
     const user = getters['user/getUser'];
     const navLinks = [
-      { to: '/', label: 'Home' },
+      // { to: '/', label: 'Home' },
       // { to: '/index-db', label: 'IndexedDB' },
     ];
     const handleBack = () => {

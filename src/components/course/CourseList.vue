@@ -1,4 +1,5 @@
 <template>
+  <InstallBanner />
   <NavBar />
   <div class="mt-8">
     <div v-for="(group, title) in classInfoData" :key="title" class="mb-5">
@@ -42,11 +43,13 @@ import axios from 'axios';
 import { ref, onMounted } from 'vue';
 import { URL } from '../../constants';
 import NavBar from '../NavBar.vue';
+import InstallBanner from '../InstallBanner.vue';
 
 export default {
   name: 'CourseList',
   components: {
     NavBar,
+    InstallBanner,
   },
   setup() {
     const classInfoData = ref([]);
