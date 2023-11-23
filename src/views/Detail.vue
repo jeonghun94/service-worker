@@ -7,7 +7,12 @@
       :key="index"
     >
       <div class="w-full my-3 flex justify-center items-center gap-3">
-        <div class="flex flex-col gap-3">
+        <div class="flex items-center gap-3 p-2 box-border">
+          <img
+            class="w-12 h-12 rounded-md"
+            :src="item.courseThumbnail"
+            alt="logo"
+          />
           <h1 class="text-md font-semibold">{{ item.courseName }}</h1>
         </div>
       </div>
@@ -16,15 +21,10 @@
         <h1 class="my-3 text-xl text-left text-blue-400 font-semibold">
           강의 내용
         </h1>
-        <div class="flex gap-3 mb-3" v-if="item.contents?.images?.length > 0">
-          <img
-            v-for="(content, contentIndex) in item.contents.images"
-            class="w-8 h-8 rounded-md"
-            :key="contentIndex"
-            :src="content"
-            alt="logo"
-          />
-        </div>
+        <div
+          class="flex gap-3 mb-3"
+          v-if="item.contents?.images?.length > 0"
+        ></div>
 
         <div
           v-if="item.contents?.htmls?.length > 0"
@@ -53,7 +53,7 @@
         </div>
 
         <div v-else>
-          <h4>html 콘텐츠가 없습니다</h4>
+          <h3 class="font-semibold text-xl">등록된 강의 내용이 없습니다!..</h3>
         </div>
       </div>
       <div v-else>
