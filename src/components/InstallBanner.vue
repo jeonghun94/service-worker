@@ -1,13 +1,13 @@
 <template>
   <div
-    v-if="!isInstallable"
+    v-if="deferredPrompt"
     v-motion="motionOptions"
+    @click="install"
     @mouseover="handleClearTimeout"
     @mouseleave="handleStartTimeout"
     class="absolute top-0 left-0 flex justify-center w-full text-white h-auto p-3 z-10 cursor-pointer"
   >
     <div
-      id="installBanner"
       class="w-2/3 max-w-md px-5 py-3 box-border flex flex-col items-start bg-gray-950 bg-opacity-90 rounded-md"
     >
       <div class="w-full flex gap-3 text-left">
@@ -29,12 +29,12 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onBeforeUnmount, onMounted } from 'vue';
 
 export default {
-  name: 'InstallBanner',
+  name: 'App',
   setup() {
-    const isInstallable = ref(false);
+    const deferredPrompt = ref(null);
     const timeoutId = ref(null);
     const motionOptions = {
       initial: {
@@ -64,29 +64,54 @@ export default {
         },
       },
     };
-    onMounted(() => {
-      isInstallable.value = Boolean(localStorage.getItem('isInstallable'));
-      if (!isInstallable.value) {
-        timeoutId.value = setTimeout(() => {
-          isInstallable.value = true;
-        }, 3000);
-      }
-    });
+
+    const dismiss = () => {
+      deferredPrompt.value = null;
+    };
+
+    const install = () => {
+      deferredPrompt.value.prompt();
+    };
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      deferredPrompt.value = e;
+    };
+
+    const handleAppInstalled = () => {
+      deferredPrompt.value = null;
+    };
+
+    const handleStartTimeout = () => {
+      timeoutId.value = setTimeout(() => {
+        dismiss();
+      }, 2000);
+    };
 
     const handleClearTimeout = () => {
       clearTimeout(timeoutId.value);
     };
 
-    const handleStartTimeout = () => {
-      timeoutId.value = setTimeout(() => {
-        isInstallable.value = true;
-      }, 2000);
-    };
+    onMounted(() => {
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.addEventListener('appinstalled', handleAppInstalled);
+      handleStartTimeout();
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener(
+        'beforeinstallprompt',
+        handleBeforeInstallPrompt,
+      );
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    });
 
     return {
-      isInstallable,
       motionOptions,
+      deferredPrompt,
 
+      dismiss,
+      install,
       handleClearTimeout,
       handleStartTimeout,
     };

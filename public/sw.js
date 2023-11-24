@@ -204,8 +204,6 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
 const getItemsAroundToday = (data) => {
   const today = new Date().toISOString().split('T')[0];
   const todayIndex = data.findIndex((item) => item.startDate === today);
-  console.log(today);
-  console.log(todayIndex);
 
   if (todayIndex === -1) {
     return [];
