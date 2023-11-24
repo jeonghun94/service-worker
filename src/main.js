@@ -21,6 +21,8 @@ window.addEventListener('beforeinstallprompt', (event) => {
       event.prompt();
       event.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === 'accepted') {
+          localhost.setItem('isInstallable', true);
+          isInstallable.value = true;
           console.log('User accepted prompt');
         } else {
           console.log('User dismissed prompt');

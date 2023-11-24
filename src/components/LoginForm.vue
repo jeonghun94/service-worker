@@ -91,7 +91,6 @@ export default {
             url: '/v2/user/me',
             success: function (response) {
               dispatch('user/setIsLogin', 'kakao');
-              console.log(response);
             },
             fail: function (error) {
               console.log(error);
