@@ -57,6 +57,7 @@ const extractUrlsFromCss = (cssText) => {
 
 const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
   // await caches.delete('html-cache');
+
   const htmlCache = await caches.open('html-cache');
   const htmlCacheKeys = await htmlCache.keys();
 
@@ -65,6 +66,7 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
     const keyCourseCode = keyUrl
       .substring(keyUrl.lastIndexOf('/') + 1)
       .split('-')[0];
+
     return !updatedCourseCodes.includes(keyCourseCode);
   });
 
@@ -199,32 +201,41 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
   }
 };
 
+const getItemsAroundToday = (data) => {
+  const today = new Date().toISOString().split('T')[0];
+  const todayIndex = data.findIndex((item) => item.startDate === today);
+  console.log(today);
+  console.log(todayIndex);
+
+  if (todayIndex === -1) {
+    return [];
+  }
+
+  const start = Math.max(0, todayIndex - 1);
+  const end = Math.min(data.length - 1, todayIndex + 1);
+
+  if (todayIndex === 0) {
+    return data.slice(todayIndex, end + 2);
+  } else if (todayIndex === data.length - 1) {
+    return data.slice(Math.max(0, todayIndex - 2), todayIndex + 1);
+  } else {
+    return data.slice(start, end + 1);
+  }
+};
+
 const cacheClassData = async (cache, data) => {
   const updatedCourseCodes = [];
-  const today = new Date();
-  const yesterday = new Date(today);
-  const tomorrow = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const formatDate = (date) => date.toISOString().split('T')[0];
+  const result = getItemsAroundToday(data);
 
-  for (const { contents, courseCode, startDate } of data) {
-    const startDateString = formatDate(new Date(startDate));
-    if (
-      contents &&
-      (startDateString === formatDate(today) ||
-        startDateString === formatDate(yesterday) ||
-        startDateString === formatDate(tomorrow))
-    ) {
-      const { videos = [], images = [], pdf = [], htmls = [] } = contents;
-      for (const content of [...videos, ...images, ...pdf]) {
-        await cacheResource(cache, content);
-      }
+  for (const { contents, courseCode } of result) {
+    const { videos = [], images = [], pdf = [], htmls = [] } = contents;
+    for (const content of [...videos, ...images, ...pdf]) {
+      await cacheResource(cache, content);
+    }
 
-      if (htmls.length > 0) {
-        updatedCourseCodes.push(courseCode);
-        cachedHTML(courseCode, updatedCourseCodes, htmls);
-      }
+    if (htmls.length > 0) {
+      updatedCourseCodes.push(courseCode);
+      cachedHTML(courseCode, updatedCourseCodes, htmls);
     }
   }
 };
@@ -283,6 +294,7 @@ self.addEventListener('message', async (event) => {
     const cachedData = await Promise.all(
       filteredKeys.map(async (item) => (await cache.match(item.url)).text()),
     );
+
     event.source.postMessage(JSON.stringify({ type: 'html', cachedData }));
   }
 

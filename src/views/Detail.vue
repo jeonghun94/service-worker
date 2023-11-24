@@ -21,10 +21,6 @@
         <h1 class="my-3 text-xl text-left text-blue-400 font-semibold">
           강의 내용
         </h1>
-        <div
-          class="flex gap-3 mb-3"
-          v-if="item.contents?.images?.length > 0"
-        ></div>
 
         <div
           v-if="item.contents?.htmls?.length > 0"
@@ -56,6 +52,7 @@
           <h3 class="font-semibold text-xl">등록된 강의 내용이 없습니다!..</h3>
         </div>
       </div>
+
       <div v-else>
         <h4>콘텐츠가 없습니다</h4>
       </div>
@@ -135,8 +132,13 @@ export default {
         const { cachedData, type } = await JSON.parse(event.data);
         if (type === 'html') {
           htmls.value = cachedData;
+
+          if (htmls.value.length === 0) {
+            classInfoDetail.value[0].contents.htmls = [];
+          }
         } else if (type === 'data') {
           classInfoDetail.value = cachedData;
+          console.log(classInfoDetail);
         }
       });
     });
