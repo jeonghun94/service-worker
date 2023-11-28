@@ -3,6 +3,7 @@ import Home from '../views/Home.vue';
 import Detail from '../views/Detail.vue';
 import IndexedDB from '../views/IndexedDB.vue';
 import usePwaStore from '../stores/pwa';
+import LoginForm from '../components/LoginForm.vue';
 
 const routes = [
   {
@@ -21,6 +22,11 @@ const routes = [
       usePwaStore().resetDeferredPrompt();
       next();
     },
+  },
+
+  {
+    path: '/login',
+    component: LoginForm,
   },
 
   {

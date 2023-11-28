@@ -65,22 +65,23 @@
 <script>
 /* eslint-disable */
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
+import useUserStore from '../stores/user';
+
 export default {
   setup() {
-    const { dispatch } = useStore();
+    const { getUser: user, setIsLogin } = useUserStore();
 
     const email = ref('');
     const password = ref('');
-    const router = useRouter();
     onMounted(async () => {
       const queryString = window.location.search;
       const urlParams = new URLSearchParams(queryString);
 
       if (urlParams.get('code')) {
-        await dispatch('user/setIsLogin', 'naver');
-        router.replace('/');
+        setIsLogin('naver');
+        if (user.isLogin) {
+          window.location.href = '/';
+        }
       }
     });
 
@@ -90,7 +91,10 @@ export default {
           Kakao.API.request({
             url: '/v2/user/me',
             success: function (response) {
-              dispatch('user/setIsLogin', 'kakao');
+              setIsLogin('kakao');
+              if (user.isLogin) {
+                window.location.href = '/';
+              }
             },
             fail: function (error) {
               console.log(error);
@@ -104,7 +108,7 @@ export default {
     }
 
     const naverLogin = () => {
-      const url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=mu6mOx8I3hV1m1RGR9RT&redirect_uri=http://localhost:5173&state=1234`;
+      const url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=mu6mOx8I3hV1m1RGR9RT&redirect_uri=http://localhost:5173/login&state=1234`;
       window.location.href = url;
     };
 

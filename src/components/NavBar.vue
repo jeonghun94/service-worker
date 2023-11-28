@@ -41,29 +41,30 @@
 <script>
 /* eslint-disable */
 import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
 import InstallBanner from './InstallBanner.vue';
+import useUserStore from '../stores/user';
 
 export default {
   name: 'NavBar',
   setup() {
     const router = useRouter();
+    const { getUser: user, setIsLogin } = useUserStore();
     const { path } = router.currentRoute.value;
-    const { dispatch, getters } = useStore();
-    const user = getters['user/getUser'];
-    const navLinks = [
-      // { to: '/', label: 'Home' },
-      // { to: '/index-db', label: 'IndexedDB' },
-    ];
+    const navLinks = [];
+
     const handleBack = () => {
       router.push('/');
     };
+
     const handleLogout = async () => {
-      await dispatch('user/setIsLogin', false);
       if (user.social.Kakao) {
         Kakao.Auth.logout();
       }
+
+      await setIsLogin(false);
+      router.push('/login');
     };
+
     return {
       navLinks,
       router,

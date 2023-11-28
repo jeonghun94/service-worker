@@ -1,28 +1,27 @@
 <template>
-  <LoginForm v-if="!isLogin" />
-  <CourseList v-else />
+  <CourseList />
 </template>
 
 <script>
-import { computed } from 'vue';
-import { useStore } from 'vuex';
-import LoginForm from '../components/LoginForm.vue';
+import { useRouter } from 'vue-router';
 import CourseList from '../components/course/CourseList.vue';
+import useUserStore from '../stores/user';
 
 export default {
   name: 'HomeVue',
   components: {
-    LoginForm,
     CourseList,
   },
 
   setup() {
-    const { getters } = useStore();
-    const isLogin = computed(() => getters['user/isLogin']);
+    const { getUser: user } = useUserStore();
+    const router = useRouter();
+    console.log(user, 'user.getUser');
 
-    return {
-      isLogin,
-    };
+    if (!user.isLogin) {
+      console.log('user.isLogin');
+      router.push('/login');
+    }
   },
 };
 </script>

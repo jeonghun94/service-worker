@@ -11,6 +11,9 @@ const usePwaStore = defineStore('pwa', {
       this.deferredPrompt = null;
     },
   },
+  persist: {
+    enabled: true,
+  },
 });
 
 export default usePwaStore;
