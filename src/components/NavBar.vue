@@ -3,6 +3,7 @@
     class="absolute top-0 left-0 w-full flex justify-between items-center gap-3 py-2 px-3 border-b bg-white"
   >
     <div>
+      <h1>{{ isOnline }}</h1>
       <button
         v-if="$route.path !== '/'"
         type="button"
@@ -43,11 +44,17 @@
 import { useRouter } from 'vue-router';
 import InstallBanner from './InstallBanner.vue';
 import useUserStore from '../stores/user';
+import useNetworkStore from '../stores/network';
+import { storeToRefs } from 'pinia';
 
 export default {
   name: 'NavBar',
   setup() {
     const router = useRouter();
+
+    const store = useNetworkStore();
+    const { isOnline } = storeToRefs(store);
+
     const { getUser: user, setIsLogin } = useUserStore();
     const { path } = router.currentRoute.value;
     const navLinks = [];
@@ -69,6 +76,8 @@ export default {
       navLinks,
       router,
       path,
+      isOnline,
+
       handleLogout,
       handleBack,
     };

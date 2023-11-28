@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="pwa.deferredPrompt"
+    v-if="deferredPrompt"
     v-motion="motionOptions"
     @click="install"
     @mouseover="handleClearTimeout"
@@ -30,14 +30,11 @@
 
 <script>
 import { ref, onBeforeUnmount, onMounted } from 'vue';
-import usePwaStore from '../stores/pwa';
 
 export default {
   name: 'App',
   setup() {
-    const pwa = usePwaStore();
-
-    // const deferredPrompt = ref(null);
+    const deferredPrompt = ref(null);
     const timeoutId = ref(null);
     const motionOptions = {
       initial: {
@@ -69,20 +66,20 @@ export default {
     };
 
     const dismiss = () => {
-      pwa.setDeferredPrompt(null);
+      deferredPrompt.value = null;
     };
 
     const install = () => {
-      pwa.deferredPrompt.prompt();
+      deferredPrompt.value.prompt();
     };
 
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
-      pwa.setDeferredPrompt(e);
+      deferredPrompt.value = e;
     };
 
     const handleAppInstalled = () => {
-      pwa.setDeferredPrompt(null);
+      deferredPrompt.value = null;
     };
 
     const handleStartTimeout = () => {
@@ -99,7 +96,6 @@ export default {
       window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.addEventListener('appinstalled', handleAppInstalled);
       handleStartTimeout();
-      console.log(pwa.deferredPrompt);
     });
 
     onBeforeUnmount(() => {
@@ -112,7 +108,7 @@ export default {
 
     return {
       motionOptions,
-      pwa,
+      deferredPrompt,
 
       dismiss,
       install,

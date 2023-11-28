@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import Detail from '../views/Detail.vue';
-import IndexedDB from '../views/IndexedDB.vue';
-import usePwaStore from '../stores/pwa';
 import LoginForm from '../components/LoginForm.vue';
 
 const routes = [
@@ -18,20 +16,11 @@ const routes = [
   {
     path: '/',
     component: Home,
-    beforeEnter: (to, from, next) => {
-      usePwaStore().resetDeferredPrompt();
-      next();
-    },
   },
 
   {
     path: '/login',
     component: LoginForm,
-  },
-
-  {
-    path: '/index-db',
-    component: IndexedDB,
   },
 ];
 
