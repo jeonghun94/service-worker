@@ -5,10 +5,10 @@
     @click="install"
     @mouseover="handleClearTimeout"
     @mouseleave="handleStartTimeout"
-    class="absolute top-0 left-0 flex justify-center w-full text-white h-auto p-3 z-10 cursor-pointer"
+    class="fixed top-3 w-2/3 max-w-2xl inset-x-0 mx-auto text-white z-10 cursor-pointer"
   >
     <div
-      class="w-2/3 max-w-md px-5 py-3 box-border flex flex-col items-start bg-gray-950 bg-opacity-90 rounded-md"
+      class="w-full px-5 py-3 box-border flex flex-col items-start bg-gray-950 bg-opacity-90 rounded-md"
     >
       <div class="w-full flex gap-3 text-left">
         <div class="w-4/5">
