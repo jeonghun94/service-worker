@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import Detail from '../views/Detail.vue';
 import IndexedDB from '../views/IndexedDB.vue';
+import usePwaStore from '../stores/pwa';
 
 const routes = [
   {
@@ -16,6 +17,10 @@ const routes = [
   {
     path: '/',
     component: Home,
+    beforeEnter: (to, from, next) => {
+      usePwaStore().resetDeferredPrompt();
+      next();
+    },
   },
 
   {

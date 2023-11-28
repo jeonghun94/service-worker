@@ -17,20 +17,22 @@
         </div>
       </div>
 
-      <div v-if="item?.contents" class="overflow-x-auto w-full">
+      <div
+        v-if="item.contents?.htmls?.length > 0"
+        class="overflow-x-auto w-full"
+      >
         <h1 class="my-3 text-xl text-left text-blue-400 font-semibold">
           강의 내용
         </h1>
 
-        <div
-          v-if="item.contents?.htmls?.length > 0"
-          class="w-full flex flex-col gap-3 border rounded-md"
-        >
+        <div class="w-full flex flex-col gap-3 border rounded-md">
           <iframe
+            v-if="isOnline"
             class="w-full h-64"
-            :src="isOnline ? htmls[htmlsIndex] : null"
-            :srcdoc="!isOnline ? htmls[htmlsIndex] : null"
+            :src="htmls[htmlsIndex]"
           />
+
+          <iframe v-else :srcdoc="htmls[htmlsIndex]" class="w-full h-64" />
 
           <div class="w-full flex justify-between p-2">
             <button
@@ -47,14 +49,10 @@
             </button>
           </div>
         </div>
-
-        <div v-else>
-          <h3 class="font-semibold text-xl">등록된 강의 내용이 없습니다!..</h3>
-        </div>
       </div>
 
       <div v-else>
-        <h4>콘텐츠가 없습니다</h4>
+        <h3 class="font-semibold text-xl">등록된 강의 내용이 없습니다!..</h3>
       </div>
     </div>
   </div>
@@ -132,13 +130,11 @@ export default {
         const { cachedData, type } = await JSON.parse(event.data);
         if (type === 'html') {
           htmls.value = cachedData;
-
           if (htmls.value.length === 0) {
             classInfoDetail.value[0].contents.htmls = [];
           }
         } else if (type === 'data') {
           classInfoDetail.value = cachedData;
-          console.log(classInfoDetail);
         }
       });
     });
