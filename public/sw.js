@@ -250,6 +250,18 @@ const cacheApiData = async (cache, data, event) => {
   await cache.put(`${path}`, cacheResponse);
 };
 
+const cacheDetailData = async (cache, data) => {
+  const originPath = self.location.origin;
+
+  for (const item of data) {
+    const courseCode = item.courseCode;
+    const courseUrl = `${originPath}/course/${courseCode}`;
+    const response = await fetch(courseUrl);
+
+    if (response.ok) await cache.put(courseUrl, response.clone());
+  }
+};
+
 self.addEventListener('fetch', async (event) => {
   const cache = await caches.open('my-cache');
   const apiCache = await caches.open('api-cache');
@@ -257,7 +269,9 @@ self.addEventListener('fetch', async (event) => {
   const networkResponse = await fetch(event.request);
   if (event.request.url.includes('/api')) {
     const data = await networkResponse.json();
+
     cacheApiData(apiCache, data, event);
+    cacheDetailData(cache, data);
     cacheClassData(cache, data);
   } else {
     await cache.put(event.request, networkResponse.clone());
