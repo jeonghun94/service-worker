@@ -16,7 +16,6 @@ export default {
   setup() {
     const { getUser: user } = useUserStore();
     const router = useRouter();
-    console.log(user, 'user.getUser');
 
     if (!user.isLogin) {
       console.log('user.isLogin');

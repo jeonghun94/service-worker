@@ -3,7 +3,9 @@
     class="absolute top-0 left-0 w-full flex justify-between items-center gap-3 py-2 px-3 border-b bg-white"
   >
     <div>
-      <h1>{{ isOnline }}</h1>
+      <h1 class="text-lg font-extrabold">
+        {{ isOnline ? 'ON' : 'OFF' }}
+      </h1>
       <button
         v-if="$route.path !== '/'"
         type="button"

@@ -1,38 +1,34 @@
 <template>
-  <div class="flex flex-col box-border">
+  <LoadingSpinner v-if="!classInfoDetail" />
+  <div v-else class="flex flex-col box-border">
     <NavBar />
     <div
       class="flex flex-col justify-between items-start gap-3 text-xs p-2 w-full mt-8"
-      v-for="(item, index) in classInfoDetail"
-      :key="index"
     >
       <div class="w-full my-3 flex justify-center items-center gap-3">
         <div class="flex items-center gap-3 p-2 box-border">
           <img
+            :src="classInfoDetail.courseThumbnail"
             class="w-12 h-12 rounded-md"
-            :src="item.courseThumbnail"
             alt="logo"
           />
-          <h1 class="text-md font-semibold">{{ item.courseName }}</h1>
+          <h1 class="text-md font-semibold">
+            {{ classInfoDetail.courseName }}
+          </h1>
         </div>
       </div>
 
-      <div
-        v-if="item.contents?.htmls?.length > 0"
-        class="overflow-x-auto w-full"
-      >
+      <div v-if="htmls.length > 0" class="overflow-x-auto w-full">
         <h1 class="my-3 text-xl text-left text-blue-400 font-semibold">
-          강의 내용
+          강의 내용 {{ isOnline ? 'ON' : 'OFF' }}
         </h1>
 
         <div class="w-full flex flex-col gap-3 border rounded-md">
           <iframe
-            v-if="isOnline"
             class="w-full h-64"
-            :src="htmls[htmlsIndex]"
+            :src="isOnline ? htmls[htmlsIndex] : null"
+            :srcdoc="isOnline ? null : htmls[htmlsIndex]"
           />
-
-          <iframe v-else :srcdoc="htmls[htmlsIndex]" class="w-full h-64" />
 
           <div class="w-full flex justify-between p-2">
             <button
@@ -59,29 +55,30 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import axios from 'axios';
 import NavBar from '../components/NavBar.vue';
 import { URL } from '../constants';
+import useNetworkStore from '../stores/network';
+import LoadingSpinner from '../components/LoadingSpinner.vue';
 
 export default {
   name: 'DetailVue',
-  components: { NavBar },
+  components: { NavBar, LoadingSpinner },
   setup() {
     const router = useRouter();
     const { courseCode } = router.currentRoute.value.params;
     const dynamicHTML = ref('');
-    const classInfoDetail = ref({});
+    const classInfoDetail = ref('');
     const apiUrl = '/api/class-info';
-    const isOnline = ref(navigator.onLine);
+
+    const store = useNetworkStore();
+    const { isOnline } = storeToRefs(store);
 
     const htmls = ref([]);
     const htmlsIndex = ref(0);
-
-    const handleConnectionChange = () => {
-      isOnline.value = navigator.onLine;
-    };
 
     const sendMessageToServiceWorker = (type, url) => {
       navigator.serviceWorker.controller.postMessage({
@@ -98,18 +95,6 @@ export default {
       }
     };
 
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          `${URL + apiUrl}-detail?courseCode=${courseCode}`,
-        );
-        classInfoDetail.value = response.data;
-        htmls.value = response.data[0].contents?.htmls;
-      } catch (error) {
-        handleFetchError();
-      }
-    };
-
     const handleBack = () => {
       router.push('/');
     };
@@ -121,27 +106,48 @@ export default {
       }
     };
 
-    onMounted(async () => {
-      await fetchData();
-      window.addEventListener('online', handleConnectionChange);
-      window.addEventListener('offline', handleConnectionChange);
+    const fetchData = async () => {
+      try {
+        const {
+          data: [detailData],
+        } = await axios.get(`${URL + apiUrl}-detail?courseCode=${courseCode}`);
+        classInfoDetail.value = await detailData;
+        htmls.value = await detailData?.contents?.htmls;
+      } catch (error) {
+        handleFetchError();
+      }
+    };
 
-      navigator.serviceWorker.addEventListener('message', async (event) => {
-        const { cachedData, type } = await JSON.parse(event.data);
-        if (type === 'html') {
-          htmls.value = cachedData;
-          if (htmls.value.length === 0) {
-            classInfoDetail.value[0].contents.htmls = [];
-          }
-        } else if (type === 'data') {
-          classInfoDetail.value = cachedData;
-        }
-      });
+    const handleServiceWorkerMessage = async (event) => {
+      const { cachedData, type } = await JSON.parse(event.data);
+
+      if (type === 'html') {
+        htmls.value = cachedData;
+      } else if (type === 'data') {
+        /* eslint-disable */
+        classInfoDetail.value = cachedData[0];
+      }
+    };
+
+    onMounted(async () => {
+      if (!isOnline.value) {
+        handleFetchError();
+      } else {
+        await fetchData();
+      }
+
+      navigator.serviceWorker.addEventListener(
+        'message',
+        handleServiceWorkerMessage,
+      );
     });
 
-    onBeforeUnmount(() => {
-      window.removeEventListener('online', handleConnectionChange);
-      window.removeEventListener('offline', handleConnectionChange);
+    watch(isOnline, async (newValue, oldValue) => {
+      if (newValue) {
+        await fetchData();
+      } else {
+        handleFetchError();
+      }
     });
 
     return {

@@ -12,7 +12,6 @@ const useNetworkStore = defineStore('network', {
   },
   persist: {
     enabled: true,
-    storage: window.sessionStorage,
   },
 });
 
