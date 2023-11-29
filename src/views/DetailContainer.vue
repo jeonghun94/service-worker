@@ -142,12 +142,27 @@ const handleServiceWorkerMessage = async (event) => {
   }
 };
 
+const mouserClick = (e) => {
+  switch (e.button) {
+    case 3:
+      handleHtmlChange(-1);
+      break;
+    case 4:
+      handleHtmlChange(1);
+      break;
+    default:
+      break;
+  }
+};
+
 onMounted(async () => {
   if (!isOnline.value) {
     handleFetchError();
   } else {
     await fetchData();
   }
+
+  window.addEventListener('mouseup', mouserClick);
 
   navigator.serviceWorker.addEventListener(
     'message',
