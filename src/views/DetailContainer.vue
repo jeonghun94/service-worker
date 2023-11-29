@@ -143,6 +143,7 @@ const handleServiceWorkerMessage = async (event) => {
 };
 
 const mouserClick = (e) => {
+  console.log(e.button);
   switch (e.button) {
     case 3:
       handleHtmlChange(-1);
@@ -162,7 +163,7 @@ onMounted(async () => {
     await fetchData();
   }
 
-  window.addEventListener('mouseup', mouserClick);
+  // window.addEventListener('mousedown', mouserClick);
 
   navigator.serviceWorker.addEventListener(
     'message',

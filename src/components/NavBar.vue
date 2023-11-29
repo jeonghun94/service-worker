@@ -2,7 +2,7 @@
   <div
     class="absolute top-0 left-0 w-full flex justify-between items-center gap-3 py-2 px-3 border-b bg-white"
   >
-    <div>
+    <div class="flex gap-3">
       <h1 class="text-lg font-extrabold">
         {{ isOnline ? 'ON' : 'OFF' }}
       </h1>
