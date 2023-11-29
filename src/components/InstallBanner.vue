@@ -28,93 +28,75 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onBeforeUnmount, onMounted } from 'vue';
 
-export default {
-  name: 'App',
-  setup() {
-    const deferredPrompt = ref(null);
-    const timeoutId = ref(null);
-    const motionOptions = {
-      initial: {
-        opacity: 0,
-        y: -200,
-      },
-      enter: {
-        opacity: 1,
-        y: 0,
-        transition: {
-          delay: 150,
-          type: 'spring',
-          stiffness: 250,
-          damping: 25,
-          mass: 0.5,
-        },
-      },
-      leave: {
-        opacity: 0,
-        y: -200,
-        transition: {
-          delay: 150,
-          type: 'spring',
-          stiffness: 250,
-          damping: 25,
-          mass: 0.5,
-        },
-      },
-    };
-
-    const dismiss = () => {
-      deferredPrompt.value = null;
-    };
-
-    const install = () => {
-      deferredPrompt.value.prompt();
-    };
-
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      deferredPrompt.value = e;
-    };
-
-    const handleAppInstalled = () => {
-      deferredPrompt.value = null;
-    };
-
-    const handleStartTimeout = () => {
-      timeoutId.value = setTimeout(() => {
-        dismiss();
-      }, 2000);
-    };
-
-    const handleClearTimeout = () => {
-      clearTimeout(timeoutId.value);
-    };
-
-    onMounted(() => {
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.addEventListener('appinstalled', handleAppInstalled);
-      handleStartTimeout();
-    });
-
-    onBeforeUnmount(() => {
-      window.removeEventListener(
-        'beforeinstallprompt',
-        handleBeforeInstallPrompt,
-      );
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    });
-
-    return {
-      motionOptions,
-      deferredPrompt,
-
-      dismiss,
-      install,
-      handleClearTimeout,
-      handleStartTimeout,
-    };
+const deferredPrompt = ref(null);
+const timeoutId = ref(null);
+const motionOptions = {
+  initial: {
+    opacity: 0,
+    y: -200,
+  },
+  enter: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: 150,
+      type: 'spring',
+      stiffness: 250,
+      damping: 25,
+      mass: 0.5,
+    },
+  },
+  leave: {
+    opacity: 0,
+    y: -200,
+    transition: {
+      delay: 150,
+      type: 'spring',
+      stiffness: 250,
+      damping: 25,
+      mass: 0.5,
+    },
   },
 };
+
+const dismiss = () => {
+  deferredPrompt.value = null;
+};
+
+const install = () => {
+  deferredPrompt.value.prompt();
+};
+
+const handleBeforeInstallPrompt = (e) => {
+  e.preventDefault();
+  deferredPrompt.value = e;
+};
+
+const handleAppInstalled = () => {
+  deferredPrompt.value = null;
+};
+
+const handleStartTimeout = () => {
+  timeoutId.value = setTimeout(() => {
+    dismiss();
+  }, 2000);
+};
+
+const handleClearTimeout = () => {
+  clearTimeout(timeoutId.value);
+};
+
+onMounted(() => {
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  window.addEventListener('appinstalled', handleAppInstalled);
+  handleStartTimeout();
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  window.removeEventListener('appinstalled', handleAppInstalled);
+});
 </script>

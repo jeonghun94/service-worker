@@ -6,10 +6,8 @@ self.addEventListener('install', async (event) => {
       return cache.addAll([
         '/',
         '/vite.svg',
-        '/img/js-logo.png',
-        '/offline.html',
-        '/testVideo.mp4',
         '/img/icons/msapplication-icon-144x144.png',
+        '/offline.html',
       ]);
     }),
   );

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from '../views/Home.vue';
-import Detail from '../views/Detail.vue';
+import HomeContainer from '../views/HomeContainer.vue';
+import DetailContainer from '../views/DetailContainer.vue';
 import LoginForm from '../components/LoginForm.vue';
 
 const routes = [
@@ -9,13 +9,13 @@ const routes = [
     children: [
       {
         path: ':courseCode',
-        component: Detail,
+        component: DetailContainer,
       },
     ],
   },
   {
     path: '/',
-    component: Home,
+    component: HomeContainer,
   },
 
   {

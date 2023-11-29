@@ -41,7 +41,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 /* eslint-disable */
 import { useRouter } from 'vue-router';
 import InstallBanner from './InstallBanner.vue';
@@ -49,41 +49,25 @@ import useUserStore from '../stores/user';
 import useNetworkStore from '../stores/network';
 import { storeToRefs } from 'pinia';
 
-export default {
-  name: 'NavBar',
-  setup() {
-    const router = useRouter();
+const router = useRouter();
 
-    const store = useNetworkStore();
-    const { isOnline } = storeToRefs(store);
+const store = useNetworkStore();
+const { isOnline } = storeToRefs(store);
 
-    const { getUser: user, setIsLogin } = useUserStore();
-    const { path } = router.currentRoute.value;
-    const navLinks = [];
+const { getUser: user, setIsLogin } = useUserStore();
+const { path } = router.currentRoute.value;
+const navLinks = [];
 
-    const handleBack = () => {
-      router.push('/');
-    };
+const handleBack = () => {
+  router.push('/');
+};
 
-    const handleLogout = async () => {
-      if (user.social.Kakao) {
-        Kakao.Auth.logout();
-      }
+const handleLogout = async () => {
+  if (user.social.Kakao) {
+    Kakao.Auth.logout();
+  }
 
-      await setIsLogin(false);
-      router.push('/login');
-    };
-
-    return {
-      navLinks,
-      router,
-      path,
-      isOnline,
-
-      handleLogout,
-      handleBack,
-    };
-  },
-  components: { InstallBanner },
+  await setIsLogin(false);
+  router.push('/login');
 };
 </script>

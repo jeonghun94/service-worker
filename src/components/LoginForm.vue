@@ -62,63 +62,51 @@
   </div>
 </template>
 
-<script>
+<script setup>
 /* eslint-disable */
 import { ref, onMounted } from 'vue';
 import useUserStore from '../stores/user';
 
-export default {
-  setup() {
-    const { getUser: user, setIsLogin } = useUserStore();
+const { getUser: user, setIsLogin } = useUserStore();
 
-    const email = ref('');
-    const password = ref('');
-    onMounted(async () => {
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
+const email = ref('');
+const password = ref('');
+onMounted(async () => {
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
 
-      if (urlParams.get('code')) {
-        setIsLogin('naver');
-        if (user.isLogin) {
-          window.location.href = '/';
-        }
-      }
-    });
+  if (urlParams.get('code')) {
+    setIsLogin('naver');
+    if (user.isLogin) {
+      window.location.href = '/';
+    }
+  }
+});
 
-    function kakaoLogin() {
-      Kakao.Auth.login({
+function kakaoLogin() {
+  Kakao.Auth.login({
+    success: function (response) {
+      Kakao.API.request({
+        url: '/v2/user/me',
         success: function (response) {
-          Kakao.API.request({
-            url: '/v2/user/me',
-            success: function (response) {
-              setIsLogin('kakao');
-              if (user.isLogin) {
-                window.location.href = '/';
-              }
-            },
-            fail: function (error) {
-              console.log(error);
-            },
-          });
+          setIsLogin('kakao');
+          if (user.isLogin) {
+            window.location.href = '/';
+          }
         },
         fail: function (error) {
           console.log(error);
         },
       });
-    }
+    },
+    fail: function (error) {
+      console.log(error);
+    },
+  });
+}
 
-    const naverLogin = () => {
-      const url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=mu6mOx8I3hV1m1RGR9RT&redirect_uri=http://localhost:5173/login&state=1234`;
-      window.location.href = url;
-    };
-
-    return {
-      email,
-      password,
-
-      kakaoLogin,
-      naverLogin,
-    };
-  },
+const naverLogin = () => {
+  const url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=mu6mOx8I3hV1m1RGR9RT&redirect_uri=http://localhost:5173/login&state=1234`;
+  window.location.href = url;
 };
 </script>
