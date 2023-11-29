@@ -30,19 +30,28 @@
         <div class="w-full flex flex-col gap-3 border rounded-md">
           <iframe
             class="w-full h-64"
+            title="chapter"
             :src="isOnline ? htmls[htmlsIndex] : null"
             :srcdoc="isOnline ? null : htmls[htmlsIndex]"
           />
 
           <div class="w-full flex justify-between p-2">
             <button
-              class="bg-red-300 text-white p-2 rounded-md"
+              :class="
+                htmlsIndex === 0
+                  ? 'bg-gray-300 text-white p-2 rounded-md cursor-not-allowed'
+                  : 'bg-red-300 text-white p-2 rounded-md'
+              "
               @click="handleHtmlChange(-1)"
             >
               이전 페이지
             </button>
             <button
-              class="bg-blue-300 text-white p-2 rounded-md"
+              :class="
+                htmlsIndex === htmls.length - 1
+                  ? 'bg-gray-300 text-white p-2 rounded-md cursor-not-allowed'
+                  : 'bg-blue-300 text-white p-2 rounded-md'
+              "
               @click="handleHtmlChange(1)"
             >
               다음 페이지
