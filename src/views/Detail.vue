@@ -18,9 +18,13 @@
         </div>
       </div>
 
-      <div v-if="htmls.length > 0" class="overflow-x-auto w-full">
+      <div v-if="htmlsLoading" class="font-semibold text-xl">
+        강의를 불러오는 중입니다...
+      </div>
+
+      <div v-else-if="htmls.length > 0" class="overflow-x-auto w-full">
         <h1 class="my-3 text-xl text-left text-blue-400 font-semibold">
-          강의 내용 {{ isOnline ? 'ON' : 'OFF' }}
+          강의 내용
         </h1>
 
         <div class="w-full flex flex-col gap-3 border rounded-md">
@@ -63,21 +67,21 @@ import NavBar from '../components/NavBar.vue';
 import { URL } from '../constants';
 import useNetworkStore from '../stores/network';
 import LoadingSpinner from '../components/LoadingSpinner.vue';
-
+/* eslint-disable */
 export default {
   name: 'DetailVue',
   components: { NavBar, LoadingSpinner },
   setup() {
     const router = useRouter();
+    const store = useNetworkStore();
+    const { isOnline } = storeToRefs(store);
     const { courseCode } = router.currentRoute.value.params;
     const dynamicHTML = ref('');
     const classInfoDetail = ref('');
     const apiUrl = '/api/class-info';
 
-    const store = useNetworkStore();
-    const { isOnline } = storeToRefs(store);
-
     const htmls = ref([]);
+    const htmlsLoading = ref(false);
     const htmlsIndex = ref(0);
 
     const sendMessageToServiceWorker = (type, url) => {
@@ -89,6 +93,8 @@ export default {
     };
 
     const handleFetchError = () => {
+      htmlsLoading.value = true;
+
       if (navigator.serviceWorker.controller) {
         sendMessageToServiceWorker('data', apiUrl);
         sendMessageToServiceWorker('html', apiUrl);
@@ -118,13 +124,20 @@ export default {
       }
     };
 
+    const fetchHtmlData = async (data) => {
+      return new Promise((resolve) => {
+        htmls.value = data;
+        resolve();
+      });
+    };
+
     const handleServiceWorkerMessage = async (event) => {
       const { cachedData, type } = await JSON.parse(event.data);
 
       if (type === 'html') {
-        htmls.value = cachedData;
+        await fetchHtmlData(cachedData);
+        htmlsLoading.value = false;
       } else if (type === 'data') {
-        /* eslint-disable */
         classInfoDetail.value = cachedData[0];
       }
     };
@@ -155,8 +168,10 @@ export default {
       classInfoDetail,
       dynamicHTML,
       isOnline,
+
       htmls,
       htmlsIndex,
+      htmlsLoading,
 
       handleBack,
       handleHtmlChange,
