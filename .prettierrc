@@ -1,8 +1,9 @@
 {
-    "trailingComma": "all",
-    "arrowParens": "always",
-    "singleQuote": true,
-    "useTabs": false,
-    "semi": true,
-    "tabWidth": 2
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "singleQuote": true,
+  "useTabs": false,
+  "semi": true,
+  "tabWidth": 2,
+  "multilineImportStyle": "newline"
 }

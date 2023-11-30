@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import axios from 'axios';
@@ -142,18 +142,9 @@ const handleServiceWorkerMessage = async (event) => {
   }
 };
 
-const mouserClick = (e) => {
-  console.log(e.button);
-  switch (e.button) {
-    case 3:
-      handleHtmlChange(-1);
-      break;
-    case 4:
-      handleHtmlChange(1);
-      break;
-    default:
-      break;
-  }
+const handleMouseDown = (e) => {
+  const { button } = e;
+  button === 3 && window.history.go(-1);
 };
 
 onMounted(async () => {
@@ -163,9 +154,16 @@ onMounted(async () => {
     await fetchData();
   }
 
-  // window.addEventListener('mousedown', mouserClick);
-
+  window.addEventListener('mousedown', handleMouseDown);
   navigator.serviceWorker.addEventListener(
+    'message',
+    handleServiceWorkerMessage,
+  );
+});
+
+onUnmounted(() => {
+  window.removeEventListener('mousedown', handleMouseDown);
+  navigator.serviceWorker.removeEventListener(
     'message',
     handleServiceWorkerMessage,
   );
