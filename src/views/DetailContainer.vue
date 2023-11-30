@@ -155,7 +155,7 @@ onMounted(async () => {
     await fetchData();
   }
 
-  window.addEventListener('mousedown', handleMouseDown);
+  // window.addEventListener('mousedown', handleMouseDown);
   navigator.serviceWorker.addEventListener(
     'message',
     handleServiceWorkerMessage,
@@ -163,7 +163,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener('mousedown', handleMouseDown);
+  // window.removeEventListener('mousedown', handleMouseDown);
   navigator.serviceWorker.removeEventListener(
     'message',
     handleServiceWorkerMessage,
