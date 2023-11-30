@@ -42,12 +42,11 @@
 </template>
 
 <script setup>
-/* eslint-disable */
+/* eslint-disable  */
 import { useRouter } from 'vue-router';
-import InstallBanner from './InstallBanner.vue';
+import { storeToRefs } from 'pinia';
 import useUserStore from '../stores/user';
 import useNetworkStore from '../stores/network';
-import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 
@@ -55,7 +54,6 @@ const store = useNetworkStore();
 const { isOnline } = storeToRefs(store);
 
 const { getUser: user, setIsLogin } = useUserStore();
-const { path } = router.currentRoute.value;
 const navLinks = [];
 
 const handleBack = () => {

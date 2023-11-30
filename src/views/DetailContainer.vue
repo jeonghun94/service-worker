@@ -68,6 +68,7 @@
 </template>
 
 <script setup>
+/* eslint-disable */
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
@@ -76,7 +77,7 @@ import NavBar from '../components/NavBar.vue';
 import { URL } from '../constants';
 import useNetworkStore from '../stores/network';
 import LoadingSpinner from '../components/LoadingSpinner.vue';
-/* eslint-disable */
+
 const router = useRouter();
 const store = useNetworkStore();
 const { isOnline } = storeToRefs(store);
