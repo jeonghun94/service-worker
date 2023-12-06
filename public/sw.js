@@ -171,12 +171,15 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
 
         const resourceRegex = new RegExp(regexPattern, 'gi');
         if (type !== 'img') {
-          updatedText = updatedText.replace(resourceRegex, text);
+          updatedText = updatedText.replace(
+            resourceRegex,
+            text.replace('-$&', '-$\\&'),
+          );
         } else {
-          updatedText = updatedText.replace(resourceRegex, (match, rest) => {
-            const updatedSrc = `data:image/png;base64,${blob}`;
-            return `<img src="${updatedSrc}"${rest}>`;
-          });
+          updatedText = updatedText.replace(
+            resourceRegex,
+            (match, rest) => `<img src="data:image/png;base64,${blob}"${rest}>`,
+          );
         }
       }
 
