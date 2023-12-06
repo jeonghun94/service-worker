@@ -97,42 +97,117 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
       }),
     );
 
+    const getImporteCssPath = await Promise.all(
+      cssPaths.map(async (src) => {
+        const response = await fetch(new URL(src, baseUrl).toString());
+        let cssText = await response.text();
+        let urls = extractUrlsFromCss(cssText);
+
+        return urls.filter(
+          (url) => url.split('.').pop().toLowerCase() === 'css',
+        );
+      }),
+    );
+
+    const parsingImportCss = await Promise.all(
+      getImporteCssPath.flat().map(async (src) => {
+        const response = await fetch(new URL(src, baseUrl).toString());
+        let cssText = await response.text();
+        let urls = extractUrlsFromCss(cssText);
+
+        await Promise.all(
+          urls.map(async (url) => {
+            try {
+              const urlResponse = await fetch(url);
+              const dataUrl = await blobToBase64(await urlResponse.blob());
+              const fileExtention = url.split('.').pop().toLowerCase();
+              switch (fileExtention) {
+                case 'webp':
+                  cssText = cssText.replace(
+                    url,
+                    `data:image/webp;base64,${dataUrl}`,
+                  );
+                  break;
+                case 'woff':
+                  cssText = cssText.replace(
+                    url,
+                    `data:application/font-woff;base64,${dataUrl}`,
+                  );
+                  break;
+                case 'woff2':
+                  cssText = cssText.replace(
+                    url,
+                    `data:application/font-woff2;base64,${dataUrl}`,
+                  );
+                  break;
+                case 'png':
+                case 'jpg':
+                  cssText = cssText.replace(
+                    url,
+                    `data:image/png;base64,${dataUrl}`,
+                  );
+                  break;
+                default:
+                  return `data:;base64,${dataUrl}`;
+              }
+            } catch (error) {
+              console.error(`An error occurred for URL ${url}:`, error);
+            }
+          }),
+        );
+
+        return { src, text: `${cssText}` };
+      }),
+    );
+
+    console.log(parsingImportCss);
+
     const cssResources = await Promise.all(
       cssPaths.map(async (src) => {
         const response = await fetch(new URL(src, baseUrl).toString());
         let cssText = await response.text();
         const urls = extractUrlsFromCss(cssText);
 
+        if (parsingImportCss.length > 0) {
+          parsingImportCss.map((item) => {
+            cssText = cssText.replace(`@import url("${item.src}");`, item.text);
+          });
+        }
+
         await Promise.all(
           urls.map(async (url) => {
-            const urlResponse = await fetch(url);
-            const dataUrl = await blobToBase64(await urlResponse.blob());
-            const fileExtention = url.split('.').pop().toLowerCase();
-            switch (fileExtention) {
-              case 'webp':
-                cssText = cssText.replace(
-                  url,
-                  `data:image/webp;base64,${dataUrl}`,
-                );
-              case 'woff':
-                cssText = cssText.replace(
-                  url,
-                  `data:application/font-woff;base64,${dataUrl}`,
-                );
-              case 'woff2':
-                cssText = cssText.replace(
-                  url,
-                  `data:application/font-woff2;base64,${dataUrl}`,
-                );
-              case 'png':
-              case 'jpg':
-                cssText = cssText.replace(
-                  url,
-                  `data:image/png;base64,${dataUrl}`,
-                );
+            try {
+              const urlResponse = await fetch(url);
+              const dataUrl = await blobToBase64(await urlResponse.blob());
+              const fileExtention = url.split('.').pop().toLowerCase();
+              switch (fileExtention) {
+                case 'webp':
+                  cssText = cssText.replace(
+                    url,
+                    `data:image/webp;base64,${dataUrl}`,
+                  );
+                case 'woff':
+                  cssText = cssText.replace(
+                    url,
+                    `data:application/font-woff;base64,${dataUrl}`,
+                  );
+                case 'woff2':
+                  cssText = cssText.replace(
+                    url,
+                    `data:application/font-woff2;base64,${dataUrl}`,
+                  );
+                case 'png':
+                case 'jpg':
+                  cssText = cssText.replace(
+                    url,
+                    `data:image/png;base64,${dataUrl}`,
+                  );
 
-              default:
-                return `data:;base64,${dataUrl}`;
+                default:
+                  return `data:;base64,${dataUrl}`;
+              }
+            } catch (error) {
+              console.error(`An error occurred for URL ${url}:`, error);
             }
           }),
         );
