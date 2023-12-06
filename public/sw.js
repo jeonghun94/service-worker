@@ -157,55 +157,9 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
       }),
     );
 
+    // 재귀적으로 import된 css 파일을 파싱
     const parsingImportCss = await Promise.all(
-      getImporteCssPath.flat().map(async (src) => {
-        const response = await fetch(new URL(src, BASE_URL).toString());
-        let cssText = await response.text();
-        let urls = extractUrlsFromCss(cssText);
-
-        await Promise.all(
-          urls.map(async (url) => {
-            try {
-              const urlResponse = await fetch(url);
-              const dataUrl = await blobToBase64(await urlResponse.blob());
-              const fileExtention = url.split('.').pop().toLowerCase();
-              switch (fileExtention) {
-                case 'webp':
-                  cssText = cssText.replace(
-                    url,
-                    `data:image/webp;base64,${dataUrl}`,
-                  );
-                  break;
-                case 'woff':
-                  cssText = cssText.replace(
-                    url,
-                    `data:application/font-woff;base64,${dataUrl}`,
-                  );
-                  break;
-                case 'woff2':
-                  cssText = cssText.replace(
-                    url,
-                    `data:application/font-woff2;base64,${dataUrl}`,
-                  );
-                  break;
-                case 'png':
-                case 'jpg':
-                  cssText = cssText.replace(
-                    url,
-                    `data:image/png;base64,${dataUrl}`,
-                  );
-                  break;
-                default:
-                  return `data:;base64,${dataUrl}`;
-              }
-            } catch (error) {
-              console.error(`An error occurred for URL ${url}:`, error);
-            }
-          }),
-        );
-
-        return { src, text: `${cssText}` };
-      }),
+      getImporteCssPath.flat().map((src) => parseCss(src, [], true)),
     );
 
     const cssResources = await Promise.all(
