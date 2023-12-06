@@ -12,7 +12,7 @@ self.addEventListener('install', async (event) => {
     }),
   );
 });
-
+const BASE_URL = 'http://localhost:3000/';
 const isResourceCached = async (cache, resource) => {
   const cachedResponse = await cache.match(resource);
   return !!cachedResponse;
@@ -52,6 +52,56 @@ const extractUrlsFromCss = (cssText) => {
   return matches ? matches.map((match) => match.replace(urlRegex, '$1')) : [];
 };
 
+const parseCss = async (src, parsingImportCss, isInculeScript) => {
+  const response = await fetch(new URL(src, BASE_URL).toString());
+  let cssText = await response.text();
+  const urls = extractUrlsFromCss(cssText);
+
+  if (parsingImportCss.length > 0) {
+    parsingImportCss.forEach((item) => {
+      cssText = cssText.replace(`@import url("${item.src}");`, item.text);
+    });
+  }
+
+  await Promise.all(
+    urls.map(async (url) => {
+      try {
+        const urlResponse = await fetch(url);
+        const dataUrl = await blobToBase64(await urlResponse.blob());
+        const fileExtension = url.split('.').pop().toLowerCase();
+
+        switch (fileExtension) {
+          case 'webp':
+            cssText = cssText.replace(url, `data:image/webp;base64,${dataUrl}`);
+            break;
+          case 'woff':
+            cssText = cssText.replace(
+              url,
+              `data:application/font-woff;base64,${dataUrl}`,
+            );
+            break;
+          case 'woff2':
+            cssText = cssText.replace(
+              url,
+              `data:application/font-woff2;base64,${dataUrl}`,
+            );
+            break;
+          case 'png':
+          case 'jpg':
+            cssText = cssText.replace(url, `data:image/png;base64,${dataUrl}`);
+            break;
+          default:
+            return `data:;base64,${dataUrl}`;
+        }
+      } catch (error) {
+        console.error(`An error occurred for URL ${url}:`, error);
+      }
+    }),
+  );
+
+  return { src, text: isInculeScript ? cssText : `<style>${cssText}</style>` };
+};
+
 const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
   const htmlCache = await caches.open('html-cache');
   const htmlCacheKeys = await htmlCache.keys();
@@ -66,8 +116,6 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
   });
 
   await Promise.all(keysToDelete.map((key) => htmlCache.delete(key)));
-
-  const baseUrl = 'http://localhost:3000/';
 
   for (let i = 0; i < htmls.length; i++) {
     const currentHTML = htmls[i];
@@ -88,7 +136,7 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
 
     const scriptResources = await Promise.all(
       scriptPaths.map(async (src) => {
-        const response = await fetch(new URL(src, baseUrl).toString());
+        const response = await fetch(new URL(src, BASE_URL).toString());
 
         return {
           src,
@@ -99,7 +147,7 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
 
     const getImporteCssPath = await Promise.all(
       cssPaths.map(async (src) => {
-        const response = await fetch(new URL(src, baseUrl).toString());
+        const response = await fetch(new URL(src, BASE_URL).toString());
         let cssText = await response.text();
         let urls = extractUrlsFromCss(cssText);
 
@@ -111,7 +159,7 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
 
     const parsingImportCss = await Promise.all(
       getImporteCssPath.flat().map(async (src) => {
-        const response = await fetch(new URL(src, baseUrl).toString());
+        const response = await fetch(new URL(src, BASE_URL).toString());
         let cssText = await response.text();
         let urls = extractUrlsFromCss(cssText);
 
@@ -160,65 +208,13 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
       }),
     );
 
-    console.log(parsingImportCss);
-
     const cssResources = await Promise.all(
-      cssPaths.map(async (src) => {
-        const response = await fetch(new URL(src, baseUrl).toString());
-        let cssText = await response.text();
-        const urls = extractUrlsFromCss(cssText);
-
-        if (parsingImportCss.length > 0) {
-          parsingImportCss.map((item) => {
-            cssText = cssText.replace(`@import url("${item.src}");`, item.text);
-          });
-        }
-
-        await Promise.all(
-          urls.map(async (url) => {
-            try {
-              const urlResponse = await fetch(url);
-              const dataUrl = await blobToBase64(await urlResponse.blob());
-              const fileExtention = url.split('.').pop().toLowerCase();
-              switch (fileExtention) {
-                case 'webp':
-                  cssText = cssText.replace(
-                    url,
-                    `data:image/webp;base64,${dataUrl}`,
-                  );
-                case 'woff':
-                  cssText = cssText.replace(
-                    url,
-                    `data:application/font-woff;base64,${dataUrl}`,
-                  );
-                case 'woff2':
-                  cssText = cssText.replace(
-                    url,
-                    `data:application/font-woff2;base64,${dataUrl}`,
-                  );
-                case 'png':
-                case 'jpg':
-                  cssText = cssText.replace(
-                    url,
-                    `data:image/png;base64,${dataUrl}`,
-                  );
-
-                default:
-                  return `data:;base64,${dataUrl}`;
-              }
-            } catch (error) {
-              console.error(`An error occurred for URL ${url}:`, error);
-            }
-          }),
-        );
-
-        return { src, text: `<style>${cssText}</style>` };
-      }),
+      cssPaths.map((src) => parseCss(src, parsingImportCss)),
     );
 
     const imgResources = await Promise.all(
       imgPaths.map(async (src) => {
-        const response = await fetch(new URL(src, baseUrl).toString());
+        const response = await fetch(new URL(src, BASE_URL).toString());
         const blob = await blobToBase64(await response.blob());
         return { src, blob };
       }),
