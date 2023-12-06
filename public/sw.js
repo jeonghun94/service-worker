@@ -77,9 +77,15 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
     const networkResponse = await fetch(currentHTML);
     const currentHTMLText = await networkResponse.text();
 
-    const scriptRegex = /<script\s+src=["'](.+?)["']\s*>/gi;
+    const scriptRegex =
+      /<script(?:\s+type="text\/javascript")?\s+src=["'](.+?)["']\s*>/gi;
+    // const scriptRegex = /<script\s+src=["'](.+?)["']\s*>/gi;
+
     const cssRegex =
-      /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi;
+      /<link\s+rel=["']stylesheet["']\s+(?:type=["']text\/css["']\s+)?href=["']([^"']+)["'][^>]*>/gi;
+    // const cssRegex =
+    //   /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi;
+
     const imgRegex = /<img\s+src=["']([^"']+)["']([^>]*)>/gi;
 
     const scriptPaths = extractResources(currentHTMLText, scriptRegex);
@@ -89,7 +95,11 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
     const scriptResources = await Promise.all(
       scriptPaths.map(async (src) => {
         const response = await fetch(new URL(src, baseUrl).toString());
-        return { src, text: `<script>${await response.text()}</script>` };
+
+        return {
+          src,
+          text: `<script>${await response.text()}</script>`,
+        };
       }),
     );
 
@@ -121,6 +131,13 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
                   url,
                   `data:application/font-woff2;base64,${dataUrl}`,
                 );
+              case 'png':
+              case 'jpg':
+                cssText = cssText.replace(
+                  url,
+                  `data:image/png;base64,${dataUrl}`,
+                );
+
               default:
                 return `data:;base64,${dataUrl}`;
             }
@@ -148,11 +165,11 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
         let regexPattern = '';
 
         if (type === 'script') {
-          regexPattern = `<script\\s+src=["']${escapeRegExp(
+          regexPattern = `<script(?:\\s+type="text\\/javascript")?\\s+src=["']${escapeRegExp(
             src,
           )}["']\\s*>([\\s\\S]*?)<\\/script>`;
         } else if (type === 'style') {
-          regexPattern = `<link\\s+rel=["']stylesheet["']\\s+href=["']${escapeRegExp(
+          regexPattern = `<link\\s+rel=["']stylesheet["'](?:\\s+type=["'](text\\/css)?["'])?\\s+href=["']${escapeRegExp(
             src,
           )}["'][^>]*>`;
         } else if (type === 'img') {
@@ -279,7 +296,7 @@ self.addEventListener('fetch', async (event) => {
 
 self.addEventListener('fetch', async (event) => {
   const imageAudioVideoRegex =
-    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf|html)$/i;
+    /\.(png|jpe?g|gif|svg|mp[34]|webm|ogg|wav|flac|aac|wma|m4a|opus|pdf|html|xhtml)$/i;
   const isRegexMatched = imageAudioVideoRegex.test(event.request.url);
 
   event.respondWith(

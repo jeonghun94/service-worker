@@ -1,41 +1,41 @@
 <template>
   <LoadingSpinner v-if="!classInfoDetail" />
-  <div v-else class="flex flex-col box-border">
+  <div v-else class="box-border flex flex-col">
     <NavBar />
     <div
-      class="flex flex-col justify-between items-start gap-3 text-xs p-2 w-full mt-8"
+      class="flex flex-col items-start justify-between w-full gap-3 p-2 mt-8 text-xs"
     >
-      <div class="w-full my-3 flex justify-center items-center gap-3">
-        <div class="flex items-center gap-3 p-2 box-border">
+      <div class="flex items-center justify-center w-full gap-3 my-3">
+        <div class="box-border flex items-center gap-3 p-2">
           <img
             :src="classInfoDetail.courseThumbnail"
             class="w-12 h-12 rounded-md"
             alt="logo"
           />
-          <h1 class="text-md font-semibold">
+          <h1 class="font-semibold text-md">
             {{ classInfoDetail.courseName }}
           </h1>
         </div>
       </div>
 
-      <div v-if="htmlsLoading" class="font-semibold text-xl">
+      <div v-if="htmlsLoading" class="text-xl font-semibold">
         강의를 불러오는 중입니다...
       </div>
 
-      <div v-else-if="htmls.length > 0" class="overflow-x-auto w-full">
-        <h1 class="my-3 text-xl text-left text-blue-400 font-semibold">
+      <div v-else-if="htmls.length > 0" class="w-full overflow-x-auto">
+        <h1 class="my-3 text-xl font-semibold text-left text-blue-400">
           강의 내용
         </h1>
 
-        <div class="w-full flex flex-col gap-3 border rounded-md">
+        <div class="flex flex-col w-full gap-3 border rounded-md">
           <iframe
-            class="w-full h-64"
+            class="w-full h-screen"
             title="chapter"
             :src="isOnline ? htmls[htmlsIndex] : null"
             :srcdoc="isOnline ? null : htmls[htmlsIndex]"
           />
 
-          <div class="w-full flex justify-between p-2">
+          <div class="flex justify-between w-full p-2">
             <button
               :class="
                 htmlsIndex === 0
@@ -61,7 +61,7 @@
       </div>
 
       <div v-else>
-        <h3 class="font-semibold text-xl">등록된 강의 내용이 없습니다!..</h3>
+        <h3 class="text-xl font-semibold">등록된 강의 내용이 없습니다!..</h3>
       </div>
     </div>
   </div>
