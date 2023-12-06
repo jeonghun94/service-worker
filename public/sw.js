@@ -47,15 +47,12 @@ const blobToBase64 = (blob) => {
 };
 
 const extractUrlsFromCss = (cssText) => {
-  // const urlRegex = /url\(["']?([^"']+)["']?\)/gi;
   const urlRegex = /url\(["']?([^"')]+)["']?\)/gi;
   const matches = cssText.match(urlRegex);
   return matches ? matches.map((match) => match.replace(urlRegex, '$1')) : [];
 };
 
 const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
-  // await caches.delete('html-cache');
-
   const htmlCache = await caches.open('html-cache');
   const htmlCacheKeys = await htmlCache.keys();
 
@@ -79,12 +76,9 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
 
     const scriptRegex =
       /<script(?:\s+type="text\/javascript")?\s+src=["'](.+?)["']\s*>/gi;
-    // const scriptRegex = /<script\s+src=["'](.+?)["']\s*>/gi;
 
     const cssRegex =
       /<link\s+rel=["']stylesheet["']\s+(?:type=["']text\/css["']\s+)?href=["']([^"']+)["'][^>]*>/gi;
-    // const cssRegex =
-    //   /<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi;
 
     const imgRegex = /<img\s+src=["']([^"']+)["']([^>]*)>/gi;
 
@@ -114,7 +108,6 @@ const cachedHTML = async (courseCode, updatedCourseCodes, htmls) => {
             const urlResponse = await fetch(url);
             const dataUrl = await blobToBase64(await urlResponse.blob());
             const fileExtention = url.split('.').pop().toLowerCase();
-            // const dataUrl = await blobToBase64(await urlResponse.blob());
             switch (fileExtention) {
               case 'webp':
                 cssText = cssText.replace(
