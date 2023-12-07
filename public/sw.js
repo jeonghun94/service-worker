@@ -1,4 +1,6 @@
 /* eslint-disable */
+const BASE_URL = 'http://localhost:3000/';
+
 self.addEventListener('install', async (event) => {
   console.log('Service Worker installing.');
   event.waitUntil(
@@ -12,7 +14,7 @@ self.addEventListener('install', async (event) => {
     }),
   );
 });
-const BASE_URL = 'http://localhost:3000/';
+
 const isResourceCached = async (cache, resource) => {
   const cachedResponse = await cache.match(resource);
   return !!cachedResponse;
