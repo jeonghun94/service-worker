@@ -27,9 +27,9 @@
           강의 내용
         </h1>
 
-        <div class="flex flex-col w-full gap-3 border rounded-md">
+        <div class="flex flex-col w-full h-auto gap-3 border rounded-md">
           <iframe
-            class="w-full h-screen"
+            class="w-full min-h-[60vh]"
             title="chapter"
             :src="isOnline ? htmls[htmlsIndex] : null"
             :srcdoc="isOnline ? null : htmls[htmlsIndex]"
